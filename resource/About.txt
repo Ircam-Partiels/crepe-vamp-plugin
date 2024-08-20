@@ -1,0 +1,5 @@
+The Crepe plugin is an implementation of the CREPE monophonic pitch tracker, based on a deep convolutional neural network operating directly on the time-domain waveform input, as a Vamp plugin.
+
+- Crepe Pitch Vamp plug-in by Pierre Guillot at Ircam (https://www.ircam.fr/)
+- Crepe model by Jong Wook Kim, Justin Salamon, Peter Li & Juan Pablo Bello (https://github.com/marl/crepe)
+- Vamp by the Centre for Digital Music, Queen Mary, University of London (www.vamp-plugins.org)

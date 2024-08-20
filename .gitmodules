@@ -7,3 +7,6 @@
 [submodule "tensorflow"]
 	path = tensorflow
 	url = https://github.com/tensorflow/tensorflow.git
+[submodule "crepe"]
+	path = crepe
+	url = https://github.com/marl/crepe.git

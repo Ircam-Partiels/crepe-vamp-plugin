@@ -1,0 +1,3 @@
+[submodule "vamp-plugin-packager"]
+	path = vamp-plugin-packager
+	url = https://github.com/Ircam-Partiels/vamp-plugin-packager.git

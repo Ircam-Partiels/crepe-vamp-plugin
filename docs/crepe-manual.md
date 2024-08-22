@@ -21,7 +21,7 @@
 
 The Crepe plugin is an implementation of the [CREPE](https://github.com/marl/crepe) monophonic pitch tracker, based on a deep convolutional neural network operating directly on the time-domain waveform input, as a [Vamp plugin](https://www.vamp-plugins.org/). The different models (*tiny*, *small*, *medium* (default), *large* and *full*) are integrated into the plugin. A smaller model increases calculation speed, at the cost of slightly lower accuracy.
 
-The Crepe plugin analyses the pitch in the audio stream and generates curves corresponding to the fequencies. A confidence score is associated with each result, enabling the data to be filtered according to a threshold.
+The Crepe plugin analyses the pitch in the audio stream and generates curves corresponding to the frequencies. A confidence score is associated with each result, enabling the data to be filtered according to a threshold.
 
 The Crepe Vamp Plugin has been designed for use in the free audio analysis application [Partiels](https://forum.ircam.fr/projects/detail/partiels/).
 

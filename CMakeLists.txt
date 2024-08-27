@@ -138,8 +138,8 @@ ive_prepare_plugin_target(cvp)
 target_compile_definitions(cvp PRIVATE CVP_PLUGIN_VERSION=${PROJECT_VERSION_MAJOR})
 target_link_libraries(cvp PRIVATE tensorflow-lite)
 
-add_custom_command(TARGET cvp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/resource/crepe.cat "$<IF:$<CONFIG:Debug>,${CMAKE_CURRENT_BINARY_DIR}/Debug/crepe.cat,${CMAKE_CURRENT_BINARY_DIR}/Release/crepe.cat>")
-set_target_properties(cvp PROPERTIES LIBRARY_OUTPUT_NAME crepe)
+add_custom_command(TARGET cvp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat "$<IF:$<CONFIG:Debug>,${CMAKE_CURRENT_BINARY_DIR}/Debug/ircamcrepe.cat,${CMAKE_CURRENT_BINARY_DIR}/Release/ircamcrepe.cat>")
+set_target_properties(cvp PROPERTIES LIBRARY_OUTPUT_NAME ircamcrepe)
 vpp_add_plugin(cvp)
 
 find_program(PARTIELS_EXE "Partiels" HINTS ${PARTIELS_EXE_HINT_PATH} NO_CACHE)
@@ -189,13 +189,13 @@ file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Manual.zip]($
 ### Install ###
 if(APPLE)
   install(TARGETS cvp RUNTIME LIBRARY DESTINATION "~/Library/Audio/Plug-Ins/Vamp/")
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/crepe.cat DESTINATION "~/Library/Audio/Plug-Ins/Vamp/")
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat DESTINATION "~/Library/Audio/Plug-Ins/Vamp/")
 elseif(UNIX)
   install(TARGETS cvp RUNTIME LIBRARY DESTINATION "~/vamp/")
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/crepe.cat DESTINATION "~/vamp/")
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat DESTINATION "~/vamp/")
 elseif(WIN32)
   install(TARGETS cvp RUNTIME DESTINATION "$ENV{PROGRAMFILES}/Vamp Plugins/" PERMISSIONS OWNER_WRITE)
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/crepe.cat DESTINATION "$ENV{PROGRAMFILES}/Vamp Plugins/")
+  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat DESTINATION "$ENV{PROGRAMFILES}/Vamp Plugins/")
 endif()
 
 ### Testing ###

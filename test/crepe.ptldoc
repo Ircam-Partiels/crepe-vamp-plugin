@@ -14,7 +14,7 @@
     <grid MiscModelVersion="131075" tickReference="0.0" mainTickInterval="0"
           tickPowerBase="2.0" tickDivisionFactor="10.0"/>
   </timeZoom>
-  <transport MiscModelVersion="131075" startPlayhead="7.521742451419414" looping="0"
+  <transport MiscModelVersion="131075" startPlayhead="2.602913341701095" looping="0"
              loopRange_start="0.0" loopRange_end="0.0" stopAtLoopEnd="0" autoScroll="1"
              gain="1.0" magnetize="0"/>
   <groups MiscModelVersion="131075" identifier="0cbca15363f34e82af09c599fdff328c"
@@ -4288,7 +4288,7 @@
              isQuantized="0" quantizeStep="0.0" sampleType="0" sampleRate="0.0"
              hasDuration="0"/>
     </description>
-    <key identifier="crepe:ircamcrepe" feature="pitch"/>
+    <key identifier="ircamcrepe:crepe" feature="pitch"/>
     <state blockSize="1024" stepSize="0" windowType="3">
       <parameters key="modelcapacity" value="2.0"/>
     </state>

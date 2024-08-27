@@ -175,7 +175,7 @@ bool Cvp::Plugin::initialise(size_t channels, size_t stepSize, size_t blockSize)
 
 std::string Cvp::Plugin::getIdentifier() const
 {
-    return "ircamcrepe";
+    return "crepe";
 }
 
 std::string Cvp::Plugin::getName() const

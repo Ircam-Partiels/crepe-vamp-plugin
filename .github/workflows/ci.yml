@@ -70,6 +70,7 @@ jobs:
         prerelease: true
         fail_on_unmatched_files: true
         generate_release_notes: true
+        body_path: ${{ github.workspace }}/build/crepe-release.md
         files: ${{ github.workspace }}/package/Crepe-Linux.tar.gz
   # Compiles, tests and packages the plugin for Windows.
   Windows:
@@ -106,6 +107,7 @@ jobs:
         prerelease: true
         fail_on_unmatched_files: true
         generate_release_notes: true
+        body_path: ${{ github.workspace }}/build/crepe-release.md
         files: ${{ github.workspace }}/package/Crepe-Windows.exe
   # Compiles, tests and packages the plugin for MacOS.
   MacOS:
@@ -157,6 +159,7 @@ jobs:
         prerelease: true
         fail_on_unmatched_files: true
         generate_release_notes: true
+        body_path: ${{ github.workspace }}/build/crepe-release.md
         files: ${{ github.workspace }}/package/Crepe-MacOS.pkg
   # Generates the documentation.
   Doc:
@@ -195,4 +198,5 @@ jobs:
         prerelease: true
         fail_on_unmatched_files: true
         generate_release_notes: true
+        body_path: ${{ github.workspace }}/build/crepe-release.md
         files: ${{ github.workspace }}/Crepe-Manual.zip

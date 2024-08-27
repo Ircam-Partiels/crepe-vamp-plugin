@@ -177,6 +177,14 @@ else()
   message(STATUS "Manual target cannot be generated because mdpdf is not found")
 endif()
 
+### Publishing ###
+set(PROJECT_URL "https://github.com/Ircam-Partiels/crepe-vamp-plugin")
+file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "## Downloads\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Linux.tar.gz](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Linux.tar.gz)\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-MacOS.pkg](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-MacOS.pkg)\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Windows.exe](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Windows.exe)\n")
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Manual.zip](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Manual.zip)\n") 
+
 ### Install ###
 if(APPLE)
   install(TARGETS cvp RUNTIME LIBRARY DESTINATION "~/Library/Audio/Plug-Ins/Vamp/")

@@ -33,7 +33,7 @@ The Crepe Vamp Plugin has been designed for use in the free audio analysis appli
 
 ## Installation
 
-Use the installer for your operating system. The plugin dynamic library (*crepe.dylib* for MacOS, *crepe.dll* for Windows and *crepe.so* for Linux) and the category file (*crepe.cat*) will be installed in your operating system's Vamp plugin installation directory:
+Use the installer for your operating system. The plugin dynamic library (*ircamcrepe.dylib* for MacOS, *ircamcrepe.dll* for Windows and *ircamcrepe.so* for Linux) and the category file (*ircamcrepe.cat*) will be installed in your operating system's Vamp plugin installation directory:
 - Linux: `~/vamp`
 - MacOS: `/Library/Audio/Plug-Ins/Vamp`
 - Windows: `C:\Program Files\Vamp`

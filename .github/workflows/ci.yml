@@ -60,7 +60,7 @@ jobs:
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
     - name: Artifact
-      uses: actions/upload-artifact@v4.4.0
+      uses: actions/upload-artifact@v4.4.3
       with:
         name: Crepe-Linux
         path: ${{ github.workspace }}/package/Crepe-Linux.tar.gz
@@ -97,7 +97,7 @@ jobs:
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
     - name: Artifact
-      uses: actions/upload-artifact@v4.4.0
+      uses: actions/upload-artifact@v4.4.3
       with:
         name: Crepe-Windows
         path: ${{ github.workspace }}/package/Crepe-Windows.exe
@@ -149,7 +149,7 @@ jobs:
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
     - name: Artifact
-      uses: actions/upload-artifact@v4.4.0
+      uses: actions/upload-artifact@v4.4.3
       with:
         name: Crepe-MacOS
         path: ${{ github.workspace }}/package/Crepe-MacOS.pkg
@@ -188,7 +188,7 @@ jobs:
         cmake --build build --target cvp_manual
         zip -jr Crepe-Manual.zip ${{ github.workspace }}/build/Manual
     - name: Artifact
-      uses: actions/upload-artifact@v4.4.0
+      uses: actions/upload-artifact@v4.4.3
       with:
         name: Crepe-Manual
         path: ${{ github.workspace }}/build/Manual

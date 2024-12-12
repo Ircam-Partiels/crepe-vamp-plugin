@@ -17,9 +17,9 @@ jobs:
     steps:
     - uses: actions/checkout@v4
     - name: Check
-      uses: jidicula/clang-format-action@v4.13.0
+      uses: jidicula/clang-format-action@v4.14.0
       with:
-        clang-format-version: '18'
+        clang-format-version: '19'
         check-path: '.'
   # Creates a cache for the model downloaded and transcribed 
   # into the C++ file for embedding in the binary. 

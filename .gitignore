@@ -4,3 +4,4 @@ package
 *.zip
 *.tar
 *.pdf
+*.DS_Store

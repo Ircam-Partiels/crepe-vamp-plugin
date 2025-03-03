@@ -88,8 +88,6 @@ include(vamp-plugin-packager/vamp-plugin-packager.cmake)
 
 ### Source ###
 set(CVP_MODEL_H ${CMAKE_CURRENT_SOURCE_DIR}/source/cvp_model.h)
-
-
 file(GLOB CVP_MODEL_CPP_LIST ${CMAKE_CURRENT_BINARY_DIR}/source/*.cpp)
 list(LENGTH CVP_MODEL_CPP_LIST CVP_MODEL_CPP_LIST_SIZE)
 if(NOT CVP_MODEL_CPP_LIST_SIZE EQUAL 5)
@@ -141,30 +139,11 @@ ive_prepare_plugin_target(cvp)
 target_compile_definitions(cvp PRIVATE CVP_PLUGIN_VERSION=${PROJECT_VERSION_MAJOR})
 target_link_libraries(cvp PRIVATE tensorflow-lite)
 
-add_custom_command(TARGET cvp POST_BUILD COMMAND ${CMAKE_COMMAND} -E copy ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat "$<IF:$<CONFIG:Debug>,${CMAKE_CURRENT_BINARY_DIR}/Debug/ircamcrepe.cat,${CMAKE_CURRENT_BINARY_DIR}/Release/ircamcrepe.cat>")
 set_target_properties(cvp PROPERTIES LIBRARY_OUTPUT_NAME ircamcrepe)
-vpp_add_plugin(cvp)
-
-find_program(PARTIELS_EXE "Partiels" HINTS ${PARTIELS_EXE_HINT_PATH} NO_CACHE)
-if(PARTIELS_EXE)
-  if(NOT IS_DIRECTORY ${PARTIELS_EXE}) 
-      cmake_path(GET PARTIELS_EXE PARENT_PATH PARTIELS_EXE_PARENT)
-      cmake_path(SET PARTIELS_EXE NORMALIZE "${PARTIELS_EXE_PARENT}/../../")
-  endif()
-  message(STATUS "Debugging: " ${PARTIELS_EXE})
-  set_target_properties(cvp PROPERTIES XCODE_SCHEME_EXECUTABLE ${PARTIELS_EXE})
-  set_target_properties(cvp PROPERTIES XCODE_SCHEME_ARGUMENTS "${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc")
-  set_target_properties(cvp PROPERTIES XCODE_SCHEME_ENVIRONMENT "VAMP_PATH=${CMAKE_CURRENT_BINARY_DIR}/Debug")
-endif()
-
-### Format ###
-find_program(CLANG_FORMAT_EXE "clang-format" HINTS "C:/Program Files/LLVM/bin")
-if(CLANG_FORMAT_EXE)
-    add_custom_target(cvp_check_format ${CLANG_FORMAT_EXE} --Werror --dry-run --verbose -style=file ${CVP_SOURCES})
-    add_custom_target(cvp_apply_format ${CLANG_FORMAT_EXE} -i -style=file ${CVP_SOURCES})
-else()
-    message(STATUS "Clang Format targets cannot be generated because clang-format is not found")
-endif()
+vpp_add_plugin(cvp ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat)
+vpp_set_plugin_debug(cvp "${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc")
+vpp_set_plugin_install(cvp)
+vpp_create_clang_format_targets(cvp ${CVP_SOURCES})
 
 ### Manual ###
 set(CVP_MANUAL_DIR ${CMAKE_CURRENT_BINARY_DIR}/Manual)
@@ -188,39 +167,3 @@ file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Linux.tar.gz]
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-MacOS.pkg](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-MacOS.pkg)\n")
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Windows.exe](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Windows.exe)\n")
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Manual.zip](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Manual.zip)\n") 
-
-### Install ###
-if(APPLE)
-  install(TARGETS cvp RUNTIME LIBRARY DESTINATION "~/Library/Audio/Plug-Ins/Vamp/")
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat DESTINATION "~/Library/Audio/Plug-Ins/Vamp/")
-elseif(UNIX)
-  install(TARGETS cvp RUNTIME LIBRARY DESTINATION "~/vamp/")
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat DESTINATION "~/vamp/")
-elseif(WIN32)
-  install(TARGETS cvp RUNTIME DESTINATION "$ENV{PROGRAMFILES}/Vamp Plugins/" PERMISSIONS OWNER_WRITE)
-  install(FILES ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat DESTINATION "$ENV{PROGRAMFILES}/Vamp Plugins/")
-endif()
-
-### Testing ###
-if(NOT IGNORE_VAMP_PLUGIN_TESTER)
-  enable_testing()
-  if(APPLE)
-    if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester/vamp-plugin-tester)
-      file(DOWNLOAD "https://github.com/pierreguillot/vamp-plugin-tester/releases/download/1.1/vamp-plugin-tester-1.1-osx-arm.zip" "${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester.tar.gz")
-      file(ARCHIVE_EXTRACT INPUT "${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester.tar.gz" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    endif()
-  elseif(UNIX)
-    if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester/vamp-plugin-tester)
-      file(DOWNLOAD "https://github.com/pierreguillot/vamp-plugin-tester/releases/download/1.1/vamp-plugin-tester-1.1-linux64.tar.gz" "${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester.tar.gz")
-      file(ARCHIVE_EXTRACT INPUT "${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester.tar.gz" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    endif()
-  elseif(WIN32)
-    if(NOT EXISTS ${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester/vamp-plugin-tester.exe)
-      file(DOWNLOAD "https://github.com/pierreguillot/vamp-plugin-tester/releases/download/1.1/vamp-plugin-tester-1.1a-win64.zip" "${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester.zip")
-      file(ARCHIVE_EXTRACT INPUT "${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester.zip" DESTINATION ${CMAKE_CURRENT_BINARY_DIR})
-    endif()
-  endif()
-
-  add_test(NAME VampPluginTester COMMAND ${CMAKE_CURRENT_BINARY_DIR}/vamp-plugin-tester/vamp-plugin-tester -a)
-  set_tests_properties(VampPluginTester PROPERTIES ENVIRONMENT "$<IF:$<CONFIG:Debug>,VAMP_PATH=${CMAKE_CURRENT_BINARY_DIR}/Debug,VAMP_PATH=${CMAKE_CURRENT_BINARY_DIR}/Release>")
-endif()

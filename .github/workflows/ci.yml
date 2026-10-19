@@ -79,6 +79,7 @@ jobs:
     runs-on: windows-latest
     needs: Cache
     steps:
+    - run: git config --global core.longpaths true
     - uses: actions/checkout@v4
       with:
         submodules: recursive

@@ -10,6 +10,9 @@ set(CMAKE_OSX_DEPLOYMENT_TARGET "13.3" CACHE STRING "Minimum OS X deployment ver
 set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STRING "Default value for MSVC_RUNTIME_LIBRARY of targets" FORCE)
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE CACHE BOOL "Default value for POSITION_INDEPENDENT_CODE of targets" FORCE)
 
+### Project ###
+project(CrepeVampPlugin VERSION 3.0.0 LANGUAGES C CXX)
+
 ### Include Vamp (IVE) ###
 set(IVE_BUILD_HOST_LIBRARY OFF)
 set(IVE_BUILD_PLUGIN_LIBRARY ON)
@@ -22,6 +25,7 @@ if(NOT Python_FOUND)
 endif()
 
 set(TENSORFLOW_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/tensorflow" CACHE PATH "" FORCE)
+set(ABSL_MSVC_STATIC_RUNTIME ON CACHE BOOL "Link Abseil with the static MSVC runtime (/MT) like the rest of the project" FORCE)
 set(TFLITE_ENABLE_BENCHMARK OFF)
 set(TFLITE_ENABLE_TESTS OFF)
 set(TFLITE_ENABLE_INSTALL OFF)
@@ -38,6 +42,7 @@ add_subdirectory(tensorflow/tensorflow/lite EXCLUDE_FROM_ALL)
 set_target_properties(tensorflow-lite PROPERTIES CXX_STANDARD 20)
 set_target_properties(XNNPACK PROPERTIES CXX_STANDARD 20)
 
+### TensorFlow compiler settings (the compiler is only known after project()) ###
 if(APPLE)
   add_dependencies(profiling_info_proto model_runtime_info_proto)
   foreach(TFLIB IN ITEMS kleidiai pthreadpool eight_bit_int_gemm farmhash microkernels-prod microkernel-utils microparams-init operators operator-run operator-utils subgraph xnnpack-delegate XNNPACK cpuinfo ruy_prepacked_cache ruy_thread_pool ruy_ctx ruy_context ruy_context_get_ctx ruy_trmul ruy_prepare_packed_matrices ruy_pack_arm ruy_frontend indirection tensorflow-lite normalization packing cache memory reference-ukernels datatype)
@@ -56,23 +61,14 @@ elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")
   target_compile_options(tensorflow-lite PRIVATE -Wno-deprecated -Wno-deprecated-declarations -Wno-return-type)
 elseif(CMAKE_CXX_COMPILER_ID STREQUAL "MSVC")
   # model_building.cc is only used by TensorFlow tests and fails to compile with MSVC (C2248 on a friend class)
-  get_target_property(TFLITE_SOURCES tensorflow-lite SOURCES)
-  list(FILTER TFLITE_SOURCES EXCLUDE REGEX ".*core/model_building\\.cc$")
-  set_target_properties(tensorflow-lite PROPERTIES SOURCES "${TFLITE_SOURCES}")
-  target_compile_options(xnnpack-delegate PRIVATE /wd4267 /wd4273 /wd4834)
-  target_compile_options(XNNPACK PRIVATE /wd4098 /wd4190 /wd4244)
-  target_compile_options(farmhash PRIVATE /wd4319)
-  target_compile_options(flatc PRIVATE /wd4530)
-  target_compile_options(operator-run PRIVATE /wd4098)
-  target_compile_options(packing PRIVATE /wd4190 /wd4244)
-  target_compile_options(reference-ukernels PRIVATE /wd4190)
-  target_compile_options(ruy_kernel_avx512 PRIVATE /wd4068)
-  target_compile_options(tensorflow-lite PRIVATE /wd4068 /wd4098 /wd4715 /wd4804 /wd4996)
+  set_source_files_properties(${CMAKE_CURRENT_SOURCE_DIR}/tensorflow/tensorflow/lite/core/model_building.cc TARGET_DIRECTORY tensorflow-lite PROPERTIES HEADER_FILE_ONLY ON)
+  foreach(TFLIB IN ITEMS xnnpack-delegate XNNPACK farmhash flatc operator-run packing reference-ukernels ruy_kernel_avx512 tensorflow-lite)
+    if(TARGET ${TFLIB})
+      target_compile_options(${TFLIB} PRIVATE /wd4068 /wd4098 /wd4190 /wd4244 /wd4267 /wd4273 /wd4319 /wd4530 /wd4715 /wd4804 /wd4834 /wd4996)
+    endif()
+  endforeach()
   target_link_options(tensorflow-lite PRIVATE /wd4006)
 endif()
-
-### Project ###
-project(CrepeVampPlugin VERSION 3.0.0 LANGUAGES C CXX)
 
 ### Version ###
 execute_process(COMMAND git log -1 --format=%h WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} OUTPUT_VARIABLE GIT_COMMIT_ID OUTPUT_STRIP_TRAILING_WHITESPACE)

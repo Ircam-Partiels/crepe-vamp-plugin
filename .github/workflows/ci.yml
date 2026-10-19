@@ -65,7 +65,7 @@ jobs:
         name: Crepe-Linux
         path: ${{ github.workspace }}/package/Crepe-Linux.tar.gz
     - name: Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       if: ${{ env.is_tagged == 'true' }}
       with:
         draft: true
@@ -101,7 +101,7 @@ jobs:
         name: Crepe-Windows
         path: ${{ github.workspace }}/package/Crepe-Windows.exe
     - name: Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       if: ${{ env.is_tagged == 'true' }}
       with:
         draft: true
@@ -153,7 +153,7 @@ jobs:
         name: Crepe-MacOS
         path: ${{ github.workspace }}/package/Crepe-MacOS.pkg
     - name: Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       if: ${{ env.is_tagged == 'true' }}
       with:
         draft: true
@@ -192,7 +192,7 @@ jobs:
         name: Crepe-Manual
         path: ${{ github.workspace }}/build/Manual
     - name: Release
-      uses: softprops/action-gh-release@v2
+      uses: softprops/action-gh-release@v3
       if: ${{ env.is_tagged == 'true' }}
       with:
         draft: true

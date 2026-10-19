@@ -89,10 +89,8 @@ jobs:
         path: ./build/source
         key: cvp-model
         enableCrossOsArchive: true
-    - name: Prepare
-      run: powershell -Command "& {[System.IO.File]::WriteAllBytes('${{ github.workspace }}\cert.p12', [System.Convert]::FromBase64String('${{ secrets.SECTIGO_CERT_P12}}'))}"
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -G "Visual Studio 18 2026" -A x64 -DVPP_NOTARIZE=ON -DVPP_CODESIGN_WINDOWS_KEYFILE=${{ github.workspace }}\cert.p12 -DVPP_CODESIGN_WINDOWS_KEYPASSWORD=${{ secrets.DEV_ID_PASSWORD }} -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG="${{ env.tag_name }}"
+      run: cmake -B ${{ github.workspace }}/build -G "Visual Studio 18 2026" -A x64 -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG="${{ env.tag_name }}"
     - name: Build
       run: cmake --build ${{ github.workspace }}/build --config ${{ env.build_type }}
     - name: Test

@@ -16,6 +16,27 @@ project(CrepeVampPlugin VERSION 3.0.0 LANGUAGES C CXX)
 ### Models only ###
 set(CVP_MODELS_ONLY OFF CACHE BOOL "Only generates the C++ model source files (used by the CI cache, without TensorFlow and the other dependencies)")
 
+### Sccache ###
+set(CVP_USE_SCCACHE OFF CACHE BOOL "Uses sccache as the compiler launcher")
+if(CVP_USE_SCCACHE AND NOT CVP_MODELS_ONLY)
+  if(NOT CMAKE_C_COMPILER_LAUNCHER AND NOT CMAKE_CXX_COMPILER_LAUNCHER)
+    find_program(CVP_SCCACHE_PROGRAM sccache)
+    if(CVP_SCCACHE_PROGRAM)
+      set(CMAKE_C_COMPILER_LAUNCHER "${CVP_SCCACHE_PROGRAM}" CACHE STRING "C compiler launcher" FORCE)
+      set(CMAKE_CXX_COMPILER_LAUNCHER "${CVP_SCCACHE_PROGRAM}" CACHE STRING "C++ compiler launcher" FORCE)
+      set(CVP_SCCACHE_LAUNCHER_MANAGED ON CACHE INTERNAL "Whether the Crepe Vamp Plugin enabled the compiler launcher with sccache")
+      message(VERBOSE "sccache found, compiler launcher enabled")
+    else()
+      message(VERBOSE "sccache not found, continuing without compiler cache")
+    endif()
+  endif()
+elseif(CVP_SCCACHE_LAUNCHER_MANAGED)
+  unset(CMAKE_C_COMPILER_LAUNCHER CACHE)
+  unset(CMAKE_CXX_COMPILER_LAUNCHER CACHE)
+  unset(CVP_SCCACHE_LAUNCHER_MANAGED CACHE)
+  message(VERBOSE "sccache compiler launcher disabled")
+endif()
+
 if(NOT CVP_MODELS_ONLY)
 ### Include Vamp (IVE) ###
 set(IVE_BUILD_HOST_LIBRARY OFF)

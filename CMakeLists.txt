@@ -81,7 +81,7 @@ foreach(TFLIB IN ITEMS absl_debugging_internal absl_base kleidiai absl_synchroni
     get_property(TFLIB_TYPE TARGET ${TFLIB} PROPERTY TYPE)
   endif()
   if(TFLIB_TYPE MATCHES "_LIBRARY$|EXECUTABLE" AND NOT TFLIB_TYPE STREQUAL "INTERFACE_LIBRARY")
-    if(APPLE)
+    if(CMAKE_GENERATOR STREQUAL "Xcode")
       target_compile_options(${TFLIB} PRIVATE -Wno-shorten-64-to-32 -Wno-deprecated-this-capture)
       set_target_properties(${TFLIB} PROPERTIES STATIC_LIBRARY_OPTIONS "-no_warning_for_no_symbols")
     elseif(CMAKE_CXX_COMPILER_ID STREQUAL "GNU")

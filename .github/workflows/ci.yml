@@ -63,7 +63,7 @@ jobs:
       uses: actions/upload-artifact@v7.0.2
       with:
         name: Crepe-Linux
-        path: ${{ github.workspace }}/package/Crepe-Linux.tar.gz
+        path: ${{ github.workspace }}/package/Crepe-Linux.zip
     - name: Release
       uses: softprops/action-gh-release@v3
       if: ${{ env.is_tagged == 'true' }}
@@ -73,7 +73,7 @@ jobs:
         fail_on_unmatched_files: true
         generate_release_notes: true
         body_path: ${{ github.workspace }}/build/crepe-release.md
-        files: ${{ github.workspace }}/package/Crepe-Linux.tar.gz
+        files: ${{ github.workspace }}/package/Crepe-Linux.zip
   # Compiles, tests and packages the plugin for Windows.
   Windows:
     runs-on: windows-latest

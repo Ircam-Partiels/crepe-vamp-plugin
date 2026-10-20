@@ -148,12 +148,69 @@ source_group("sources" FILES ${CVP_SOURCES})
 
 if(NOT CVP_MODELS_ONLY)
 ### Target ###
-add_library(cvp SHARED ${CVP_SOURCES} ${CVP_MODEL_CPP_LIST} ${CVP_MODEL_H})
+add_library(cvp MODULE ${CVP_SOURCES} ${CVP_MODEL_CPP_LIST} ${CVP_MODEL_H})
 ive_prepare_plugin_target(cvp)
 target_compile_definitions(cvp PRIVATE CVP_PLUGIN_VERSION=${PROJECT_VERSION_MAJOR})
 target_link_libraries(cvp PRIVATE tensorflow-lite)
 
 set_target_properties(cvp PROPERTIES LIBRARY_OUTPUT_NAME ircamcrepe)
+
+if(APPLE)
+  set(RESOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat")
+  set_source_files_properties("${RESOURCE_FILE}" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
+  target_sources(cvp PRIVATE "${RESOURCE_FILE}")
+
+  find_library(COREFOUNDATION_LIBRARY CoreFoundation)
+  target_link_libraries(cvp PRIVATE ${COREFOUNDATION_LIBRARY})
+  set_target_properties(cvp PROPERTIES
+    BUNDLE TRUE
+    OUTPUT_NAME "ircamcrepe"
+    PREFIX ""
+    BUNDLE_EXTENSION "vamp"
+    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resource/Info.plist"
+    BUILD_WITH_INSTALL_RPATH FALSE
+    LINK_FLAGS "-Wl,-rpath,@loader_path/../Frameworks"
+  )
+  add_custom_command(TARGET cvp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E echo "BNDL????" > "$<TARGET_BUNDLE_CONTENT_DIR:cvp>/PkgInfo"
+  )
+elseif(UNIX)
+  set_target_properties(cvp PROPERTIES
+    BUNDLE TRUE
+    OUTPUT_NAME "ircamcrepe"
+    PREFIX ""
+    BUNDLE_EXTENSION "vamp"
+    BUILD_WITH_INSTALL_RPATH FALSE
+  )
+  add_custom_command(TARGET cvp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-linux"
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "$<TARGET_FILE:cvp>"
+      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-linux"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
+      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+  )
+elseif(WIN32)
+  set_target_properties(cvp PROPERTIES
+    BUNDLE TRUE
+    OUTPUT_NAME "ircamcrepe"
+    PREFIX ""
+    BUNDLE_EXTENSION "vamp"
+  )
+  add_custom_command(TARGET cvp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-win"
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "$<TARGET_FILE:cvp>"
+      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-win"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+    COMMAND ${CMAKE_COMMAND} -E copy
+      "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
+      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+  )
+endif()
+
 vpp_add_plugin(cvp ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat)
 vpp_set_plugin_debug(cvp "${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc")
 vpp_set_plugin_install(cvp)

@@ -21,15 +21,15 @@ jobs:
       with:
         clang-format-version: '19'
         check-path: '.'
-  # Creates a cache for the model downloaded and transcribed 
-  # into the C++ file for embedding in the binary. 
+  # Creates a cache for the model downloaded and transcribed
+  # into the C++ file for embedding in the binary.
+  # Configures the project in models-only mode so that neither TensorFlow
+  # nor the other dependencies are required to generate the model sources.
   Cache:
     runs-on: ubuntu-latest
     needs: Format
     steps:
     - uses: actions/checkout@v7
-      with:
-        submodules: recursive
     - name: Cache
       uses: actions/cache@v6
       with:
@@ -37,7 +37,7 @@ jobs:
         key: cvp-model
         enableCrossOsArchive: true
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.build_type }}
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_MODELS_ONLY=ON
   # Compiles, tests and packages the plugin for Ubuntu.
   Ubuntu:
     runs-on: ubuntu-latest

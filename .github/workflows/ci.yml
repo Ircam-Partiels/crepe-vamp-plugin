@@ -3,6 +3,8 @@ name: CI
 on: [push, pull_request]
 
 env:
+  # Enables the sccache GitHub Actions storage backend to keep the compiler cache between builds.
+  SCCACHE_GHA_ENABLED: "true"
   # Checks for the '[debug]' string in the commit message to compile as debug instead of release.
   build_type: ${{ contains(github.event.head_commit.message, '[debug]') && 'Debug' || 'Release' }}
   # Checks whether the event corresponds to a tag to activate the automatic creation of a release.
@@ -53,12 +55,21 @@ jobs:
         key: cvp-model
         enableCrossOsArchive: true
     - uses: seanmiddleditch/gha-setup-ninja@master
+    - name: Sccache
+      uses: mozilla-actions/sccache-action@v0.0.11
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCMAKE_C_COMPILER="/usr/bin/clang" -DCMAKE_CXX_COMPILER="/usr/bin/clang++" -DCVP_BUILD_TAG=${{ env.tag_name }}
+      run: cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCMAKE_C_COMPILER="/usr/bin/clang" -DCMAKE_CXX_COMPILER="/usr/bin/clang++" -DCVP_BUILD_TAG=${{ env.tag_name }} -DCVP_USE_SCCACHE=ON -Wno-dev
     - name: Build
       run: cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
+    - name: CommonPackage
+      run: cd ${{ github.workspace }}/build/${{ env.build_type }} && zip -r ../../Crepe-CommonPackage-Linux.zip ircamcrepe.vamp
+    - name: CommonPackage Artifact
+      uses: actions/upload-artifact@v7.0.2
+      with:
+        name: Crepe-CommonPackage-Linux
+        path: ${{ github.workspace }}/Crepe-CommonPackage-Linux.zip
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -89,12 +100,26 @@ jobs:
         path: ./build/source
         key: cvp-model
         enableCrossOsArchive: true
+    - name: Developer Command Prompt
+      uses: ilammy/msvc-dev-cmd@v1
+      with:
+        arch: x64
+    - uses: seanmiddleditch/gha-setup-ninja@master
+    - name: Sccache
+      uses: mozilla-actions/sccache-action@v0.0.11
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -G "Visual Studio 18 2026" -A x64 -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG="${{ env.tag_name }}"
+      run: cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG="${{ env.tag_name }}" -DCVP_USE_SCCACHE=ON -Wno-dev
     - name: Build
-      run: cmake --build ${{ github.workspace }}/build --config ${{ env.build_type }}
+      run: cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
+    - name: CommonPackage
+      run: Compress-Archive -Path "${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp" -DestinationPath "${{ github.workspace }}/Crepe-CommonPackage-Windows.zip"
+    - name: CommonPackage Artifact
+      uses: actions/upload-artifact@v7.0.2
+      with:
+        name: Crepe-CommonPackage-Windows
+        path: ${{ github.workspace }}/Crepe-CommonPackage-Windows.zip
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -138,15 +163,25 @@ jobs:
         rm ./cert.p12
         security set-key-partition-list -S "apple-tool:,apple:,codesign:" -s -k ${{ secrets.DEV_ID_PASSWORD }} buildagent >/dev/null
         xcrun notarytool store-credentials "notary-installer" --apple-id ${{ secrets.DEV_USER_APPLE_ID }} --team-id ${{ secrets.DEV_TEAM_APPLE_ID }} --password ${{ secrets.DEV_SPEC_APP_PASSWORD }} >/dev/null
+    - uses: seanmiddleditch/gha-setup-ninja@master
+    - name: Sccache
+      uses: mozilla-actions/sccache-action@v0.0.11
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -G "Xcode" -DVPP_CODESIGN_APPLE_KEYCHAIN_PROFILE_INSTALLER="notary-installer" -DVPP_NOTARIZE=ON -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG=${{ env.tag_name }}
+      run: cmake -B ${{ github.workspace }}/build -G Ninja -DVPP_CODESIGN_APPLE_KEYCHAIN_PROFILE_INSTALLER="notary-installer" -DVPP_NOTARIZE=ON -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG=${{ env.tag_name }} -DCVP_USE_SCCACHE=ON -Wno-dev
     - name: Build
       run: |
         security unlock-keychain -p ${{ secrets.DEV_ID_PASSWORD }} buildagent
         security set-keychain-settings -lut 7200 buildagent
-        set -o pipefail && cmake --build ${{ github.workspace }}/build --config ${{ env.build_type }} | xcbeautify --renderer github-actions --disable-logging
+        cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
+    - name: CommonPackage
+      run: cd ${{ github.workspace }}/build/${{ env.build_type }} && zip -r -y ../Crepe-CommonPackage-MacOS.zip ircamcrepe.vamp
+    - name: CommonPackage Artifact
+      uses: actions/upload-artifact@v7.0.2
+      with:
+        name: Crepe-CommonPackage-MacOS
+        path: ${{ github.workspace }}/build/Crepe-CommonPackage-MacOS.zip
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -162,6 +197,46 @@ jobs:
         generate_release_notes: true
         body_path: ${{ github.workspace }}/build/crepe-release.md
         files: ${{ github.workspace }}/package/Crepe-MacOS.pkg
+  # Packages the vamp plugins of the three operating systems for a common distribution package.
+  CommonPackage:
+    runs-on: ubuntu-latest
+    needs: [Ubuntu, Windows, MacOS]
+    steps:
+    - name: Download Linux
+      uses: actions/download-artifact@v6
+      with:
+        name: Crepe-CommonPackage-Linux
+        path: ${{ github.workspace }}/commonpackage
+    - name: Download MacOS
+      uses: actions/download-artifact@v6
+      with:
+        name: Crepe-CommonPackage-MacOS
+        path: ${{ github.workspace }}/commonpackage
+    - name: Download Windows
+      uses: actions/download-artifact@v6
+      with:
+        name: Crepe-CommonPackage-Windows
+        path: ${{ github.workspace }}/commonpackage
+    - name: Package
+      run: |
+        mkdir -p dist/Linux dist/MacOS dist/Windows
+        unzip commonpackage/Crepe-CommonPackage-Linux.zip -d dist/Linux
+        unzip commonpackage/Crepe-CommonPackage-MacOS.zip -d dist/MacOS
+        unzip commonpackage/Crepe-CommonPackage-Windows.zip -d dist/Windows
+        cd dist && zip -r ../Crepe-CommonPackage.zip Linux MacOS Windows
+    - name: Artifact
+      uses: actions/upload-artifact@v7.0.2
+      with:
+        name: Crepe-CommonPackage
+        path: ${{ github.workspace }}/Crepe-CommonPackage.zip
+    - name: Release
+      uses: softprops/action-gh-release@v3
+      if: ${{ env.is_tagged == 'true' }}
+      with:
+        draft: true
+        prerelease: true
+        fail_on_unmatched_files: true
+        files: ${{ github.workspace }}/Crepe-CommonPackage.zip
   # Generates the documentation.
   Doc:
     runs-on: ubuntu-latest

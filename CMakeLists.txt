@@ -13,6 +13,10 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE CACHE BOOL "Default value for POSITION_
 ### Project ###
 project(CrepeVampPlugin VERSION 3.0.0 LANGUAGES C CXX)
 
+### Models only ###
+set(CVP_MODELS_ONLY OFF CACHE BOOL "Only generates the C++ model source files (used by the CI cache, without TensorFlow and the other dependencies)")
+
+if(NOT CVP_MODELS_ONLY)
 ### Include Vamp (IVE) ###
 set(IVE_BUILD_HOST_LIBRARY OFF)
 set(IVE_BUILD_PLUGIN_LIBRARY ON)
@@ -66,6 +70,7 @@ foreach(TFLIB IN ITEMS absl_debugging_internal absl_base kleidiai absl_synchroni
     endif()
   endif()
 endforeach()
+endif()
 
 ### Version ###
 execute_process(COMMAND git log -1 --format=%h WORKING_DIRECTORY ${CMAKE_CURRENT_LIST_DIR} OUTPUT_VARIABLE GIT_COMMIT_ID OUTPUT_STRIP_TRAILING_WHITESPACE)
@@ -80,6 +85,7 @@ endif()
 message(STATUS "Crepe Vamp Plugin: " ${CVP_BUILD_TAG} " (" ${GIT_COMMIT_ID} ")")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/version.txt ${CVP_BUILD_TAG})
 
+if(NOT CVP_MODELS_ONLY)
 ### Package ###
 set(VPP_NAME "Crepe" CACHE PATH "The name of the project" FORCE)
 set(VPP_COMPANY "Ircam" CACHE PATH "The name of the company" FORCE)
@@ -91,6 +97,7 @@ set(VPP_CHANGELOG_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resource/ChangeLog.txt" CACH
 set(VPP_ICON_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resource/Ircam-logo-noir-RS.png" CACHE PATH "The icon file to add to the distribution" FORCE)
 set(VPP_DIR ${CMAKE_CURRENT_SOURCE_DIR}/package CACHE PATH "The directory of the package" FORCE)
 include(vamp-plugin-packager/vamp-plugin-packager.cmake)
+endif()
 
 ### Source ###
 set(CVP_MODEL_H ${CMAKE_CURRENT_SOURCE_DIR}/source/cvp_model.h)
@@ -139,6 +146,7 @@ file(GLOB CVP_SOURCES
 )
 source_group("sources" FILES ${CVP_SOURCES})
 
+if(NOT CVP_MODELS_ONLY)
 ### Target ###
 add_library(cvp SHARED ${CVP_SOURCES} ${CVP_MODEL_CPP_LIST} ${CVP_MODEL_H})
 ive_prepare_plugin_target(cvp)
@@ -172,4 +180,5 @@ file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "## Downloads\n")
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Linux.tar.gz](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Linux.tar.gz)\n")
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-MacOS.pkg](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-MacOS.pkg)\n")
 file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Windows.exe](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Windows.exe)\n")
-file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Manual.zip](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Manual.zip)\n") 
+file(APPEND ${CMAKE_CURRENT_BINARY_DIR}/crepe-release.md "- [Crepe-Manual.zip](${PROJECT_URL}/releases/download/${CVP_BUILD_TAG}/Crepe-Manual.zip)\n")
+endif() 

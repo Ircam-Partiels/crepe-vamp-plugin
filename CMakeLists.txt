@@ -15,6 +15,9 @@ project(CrepeVampPlugin VERSION 3.0.0 LANGUAGES C CXX)
 ### Models only ###
 set(CVP_MODELS_ONLY OFF CACHE BOOL "Only downloads the tflite models (used by the CI cache, without TensorFlow and the other dependencies)")
 
+### Manual only ###
+set(CVP_MANUAL_ONLY OFF CACHE BOOL "Only generates the documentation (without the models, TensorFlow and the other dependencies)")
+
 ### Sccache ###
 set(CVP_USE_SCCACHE OFF CACHE BOOL "Uses sccache as the compiler launcher")
 if(CVP_USE_SCCACHE AND NOT CVP_MODELS_ONLY)
@@ -36,7 +39,7 @@ elseif(CVP_SCCACHE_LAUNCHER_MANAGED)
   message(VERBOSE "sccache compiler launcher disabled")
 endif()
 
-if(NOT CVP_MODELS_ONLY)
+if(NOT CVP_MODELS_ONLY AND NOT CVP_MANUAL_ONLY)
 ### Include Vamp (IVE) ###
 set(IVE_BUILD_HOST_LIBRARY OFF)
 set(IVE_BUILD_PLUGIN_LIBRARY ON)
@@ -105,7 +108,7 @@ endif()
 message(STATUS "Crepe Vamp Plugin: " ${CVP_BUILD_TAG} " (" ${GIT_COMMIT_ID} ")")
 file(WRITE ${CMAKE_CURRENT_BINARY_DIR}/version.txt ${CVP_BUILD_TAG})
 
-if(NOT CVP_MODELS_ONLY)
+if(NOT CVP_MODELS_ONLY AND NOT CVP_MANUAL_ONLY)
 ### Package ###
 set(VPP_NAME "Crepe" CACHE PATH "The name of the project" FORCE)
 set(VPP_COMPANY "Ircam" CACHE PATH "The name of the company" FORCE)
@@ -124,6 +127,7 @@ endif()
 ### Models ###
 # The tflite models are not compiled into the plugin: they are downloaded here
 # and copied into the Resources folder of the Vamp bundle (see the POST_BUILD commands).
+if(NOT CVP_MANUAL_ONLY)
 set(CVP_MODELS_DIR "${CMAKE_CURRENT_BINARY_DIR}/models")
 file(GLOB CVP_MODEL_TFLITE_LIST ${CVP_MODELS_DIR}/*.tflite)
 list(LENGTH CVP_MODEL_TFLITE_LIST CVP_MODEL_TFLITE_LIST_SIZE)
@@ -144,6 +148,7 @@ if(NOT CVP_MODEL_TFLITE_LIST_SIZE EQUAL 5)
     endif()
   endforeach()
 endif()
+endif()
 
 file(GLOB CVP_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/cvp.cpp
@@ -151,7 +156,7 @@ file(GLOB CVP_SOURCES
 )
 source_group("sources" FILES ${CVP_SOURCES})
 
-if(NOT CVP_MODELS_ONLY)
+if(NOT CVP_MODELS_ONLY AND NOT CVP_MANUAL_ONLY)
 ### Target ###
 add_library(cvp MODULE ${CVP_SOURCES})
 ive_prepare_plugin_target(cvp)
@@ -231,7 +236,9 @@ vpp_add_plugin(cvp ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat)
 vpp_set_plugin_debug(cvp "${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc")
 vpp_set_plugin_install(cvp)
 vpp_create_clang_format_targets(cvp ${CVP_SOURCES})
+endif()
 
+if(NOT CVP_MODELS_ONLY)
 ### Manual ###
 set(CVP_MANUAL_DIR ${CMAKE_CURRENT_BINARY_DIR}/Manual)
 file(MAKE_DIRECTORY ${CVP_MANUAL_DIR})

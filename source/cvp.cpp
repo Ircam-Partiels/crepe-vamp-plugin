@@ -1,9 +1,21 @@
 #include "cvp.h"
-#include "cvp_model.h"
 #include <algorithm>
+#include <cctype>
 #include <cmath>
+#include <filesystem>
 #include <numeric>
+#include <string>
+#include <string_view>
 #include <vamp-sdk/PluginAdapter.h>
+#include <vector>
+
+#if !defined(_WIN32)
+#include <dlfcn.h>
+#else
+#define NOMINMAX
+#define WIN32_LEAN_AND_MEAN
+#include <Windows.h>
+#endif
 
 #if defined(_MSC_VER)
 #define forcedinline __forceinline
@@ -55,6 +67,55 @@
 }
 
 #endif
+
+namespace Cvp
+{
+    static std::filesystem::path getContentsDir()
+    {
+        static auto const dir = []() -> std::filesystem::path
+        {
+#if !defined(_WIN32)
+            Dl_info info;
+            if(dladdr(reinterpret_cast<void const*>(&getContentsDir), &info) != 0 && info.dli_fname != nullptr)
+            {
+                return std::filesystem::absolute(std::filesystem::path(info.dli_fname)).parent_path().parent_path();
+            }
+#else
+            HMODULE module = nullptr;
+            if(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPWSTR>(&getContentsDir), &module) != 0)
+            {
+                std::array<wchar_t, MAX_PATH> filename = {};
+                if(GetModuleFileNameW(module, filename.data(), static_cast<DWORD>(filename.size())) != 0)
+                {
+                    return std::filesystem::path(filename.data()).parent_path().parent_path();
+                }
+            }
+#endif
+            return std::filesystem::current_path() / "Contents";
+        }();
+        return dir;
+    }
+
+    static std::vector<std::pair<std::string, std::filesystem::path>> getModelPaths()
+    {
+        static auto const capacities = std::array<std::string_view, 5>{"tiny", "small", "medium", "large", "full"};
+        auto const modelsDir = getContentsDir() / "Resources" / "models";
+        std::vector<std::pair<std::string, std::filesystem::path>> models;
+        if(!std::filesystem::exists(modelsDir))
+        {
+            return models;
+        }
+        for(auto const capacity : capacities)
+        {
+            auto const path = modelsDir / ("crepe-" + std::string(capacity) + ".tflite");
+            if(std::filesystem::exists(path))
+            {
+                models.emplace_back(std::string(capacity), path);
+            }
+        }
+        return models;
+    }
+} // namespace Cvp
 
 namespace ResamplerUtils
 {
@@ -244,27 +305,16 @@ void Cvp::Plugin::reset()
     mActivationFrame = 0;
 
     mInterpreter.reset();
-    auto const getModelData = [](size_t index)
-    {
-        switch(index)
-        {
-            case 0:
-                return std::make_tuple(Cvp::model_tiny, Cvp::model_tiny_size);
-            case 1:
-                return std::make_tuple(Cvp::model_small, Cvp::model_small_size);
-            case 2:
-                return std::make_tuple(Cvp::model_medium, Cvp::model_medium_size);
-            case 3:
-                return std::make_tuple(Cvp::model_large, Cvp::model_large_size);
-            case 4:
-                return std::make_tuple(Cvp::model_full, Cvp::model_full_size);
-            default:
-                return std::make_tuple(Cvp::model_medium, Cvp::model_medium_size);
-        }
-    };
+    mModel.reset();
 
-    auto const modelData = getModelData(mModelCapacity);
-    mModel = model_uptr(TfLiteModelCreate(std::get<0>(modelData), std::get<1>(modelData)), [](TfLiteModel* m)
+    auto const models = getModelPaths();
+    if(mModelCapacity >= models.size())
+    {
+        CvpErr("Failed to retrieve the model from the plugin bundle!");
+        return;
+    }
+    auto const modelPath = models.at(mModelCapacity).second;
+    mModel = model_uptr(TfLiteModelCreateFromFile(modelPath.string().c_str()), [](TfLiteModel* m)
                         {
                             if(m != nullptr)
                             {
@@ -321,6 +371,8 @@ void Cvp::Plugin::reset()
 Cvp::Plugin::ParameterList Cvp::Plugin::getParameterDescriptors() const
 {
     ParameterList list;
+    auto const models = getModelPaths();
+    if(!models.empty())
     {
         ParameterDescriptor param;
         param.identifier = "modelcapacity";
@@ -328,11 +380,20 @@ Cvp::Plugin::ParameterList Cvp::Plugin::getParameterDescriptors() const
         param.description = "The size of the model used";
         param.unit = "";
         param.minValue = 0;
-        param.maxValue = 4.0f;
-        param.defaultValue = 2.0f;
+        param.maxValue = static_cast<float>(models.size() - 1);
+        auto const mediumIt = std::find_if(models.cbegin(), models.cend(), [](auto const& model)
+                                           {
+                                               return model.first == "medium";
+                                           });
+        param.defaultValue = mediumIt != models.cend() ? static_cast<float>(std::distance(models.cbegin(), mediumIt)) : 0.0f;
         param.isQuantized = true;
         param.quantizeStep = 1.0f;
-        param.valueNames = {"Tiny", "Small", "Medium", "Large", "Full"};
+        for(auto const& model : models)
+        {
+            auto name = model.first;
+            name[0] = static_cast<char>(std::toupper(static_cast<unsigned char>(name[0])));
+            param.valueNames.push_back(std::move(name));
+        }
         list.push_back(std::move(param));
     }
     return list;
@@ -342,7 +403,9 @@ void Cvp::Plugin::setParameter(std::string paramid, float newval)
 {
     if(paramid == "modelcapacity")
     {
-        mModelCapacity = static_cast<size_t>(std::round(std::clamp(newval, 0.0f, 4.0f)));
+        auto const count = getModelPaths().size();
+        auto const max = count == 0 ? 0.0f : static_cast<float>(count - 1);
+        mModelCapacity = static_cast<size_t>(std::round(std::clamp(newval, 0.0f, max)));
     }
     else
     {

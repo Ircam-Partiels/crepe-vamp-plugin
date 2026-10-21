@@ -14,7 +14,7 @@ set(CMAKE_POSITION_INDEPENDENT_CODE TRUE CACHE BOOL "Default value for POSITION_
 project(CrepeVampPlugin VERSION 3.0.0 LANGUAGES C CXX)
 
 ### Models only ###
-set(CVP_MODELS_ONLY OFF CACHE BOOL "Only generates the C++ model source files (used by the CI cache, without TensorFlow and the other dependencies)")
+set(CVP_MODELS_ONLY OFF CACHE BOOL "Only downloads the tflite models (used by the CI cache, without TensorFlow and the other dependencies)")
 
 ### Sccache ###
 set(CVP_USE_SCCACHE OFF CACHE BOOL "Uses sccache as the compiler launcher")
@@ -121,21 +121,20 @@ include(vamp-plugin-packager/vamp-plugin-packager.cmake)
 endif()
 
 ### Source ###
-set(CVP_MODEL_H ${CMAKE_CURRENT_SOURCE_DIR}/source/cvp_model.h)
-file(GLOB CVP_MODEL_CPP_LIST ${CMAKE_CURRENT_BINARY_DIR}/source/*.cpp)
-list(LENGTH CVP_MODEL_CPP_LIST CVP_MODEL_CPP_LIST_SIZE)
-if(NOT CVP_MODEL_CPP_LIST_SIZE EQUAL 5)
-  set(CVP_MODEL_CPP_LIST_SIZE)
-  file(REMOVE_RECURSE "${CMAKE_CURRENT_BINARY_DIR}/source")
 
-  file(RELATIVE_PATH CVP_MODEL_HREL "${CMAKE_CURRENT_BINARY_DIR}/source" ${CVP_MODEL_H})
+### Models ###
+# The tflite models are not compiled into the plugin: they are downloaded here
+# and copied into the Resources folder of the Vamp bundle (see the POST_BUILD commands).
+set(CVP_MODELS_DIR "${CMAKE_CURRENT_BINARY_DIR}/models")
+file(GLOB CVP_MODEL_TFLITE_LIST ${CVP_MODELS_DIR}/*.tflite)
+list(LENGTH CVP_MODEL_TFLITE_LIST CVP_MODEL_TFLITE_LIST_SIZE)
+if(NOT CVP_MODEL_TFLITE_LIST_SIZE EQUAL 5)
+  file(REMOVE_RECURSE "${CVP_MODELS_DIR}")
+  file(MAKE_DIRECTORY "${CVP_MODELS_DIR}")
 
   foreach(CVP_MODEL_CAPACITY IN ITEMS "tiny" "small" "medium" "large" "full")
-    set(CVP_MODEL_CPP ${CMAKE_CURRENT_BINARY_DIR}/source/cvp_model-${CVP_MODEL_CAPACITY}.cpp)
-    file(WRITE ${CVP_MODEL_CPP} "#include \"${CVP_MODEL_HREL}\"\n\n")
-
     message(STATUS "Downloading model crepe-${CVP_MODEL_CAPACITY}.tflite")
-    set(CVP_MODEL_PATH "${CMAKE_CURRENT_BINARY_DIR}/models/crepe-${CVP_MODEL_CAPACITY}.tflite")
+    set(CVP_MODEL_PATH "${CVP_MODELS_DIR}/crepe-${CVP_MODEL_CAPACITY}.tflite")
     file(DOWNLOAD "https://github.com/Ircam-Partiels/crepe-vamp-plugin/releases/download/0.0.0/crepe-${CVP_MODEL_CAPACITY}.tflite" ${CVP_MODEL_PATH} STATUS DOWNLOAD_STATUS)
     list(GET DOWNLOAD_STATUS 0 STATUS_CODE)
     list(GET DOWNLOAD_STATUS 1 ERROR_MESSAGE)
@@ -144,32 +143,18 @@ if(NOT CVP_MODEL_CPP_LIST_SIZE EQUAL 5)
     else()
       message(FATAL_ERROR "Error occurred during download: ${ERROR_MESSAGE}")
     endif()
-
-    message(STATUS "Generating data model crepe-${CVP_MODEL_CAPACITY}.tflite")
-    file(READ ${CVP_MODEL_PATH} CVP_HEX_DATA HEX)
-    string(REGEX REPLACE "([0-9a-f][0-9a-f])" "0x\\1," CVP_HEX_DATA ${CVP_HEX_DATA})
-    file(APPEND ${CVP_MODEL_CPP} "namespace Cvp\n{\n")
-    file(APPEND ${CVP_MODEL_CPP} "static const unsigned char binary_data_${CVP_MODEL_CAPACITY}[] =\n{\n")
-    file(APPEND ${CVP_MODEL_CPP} "${CVP_HEX_DATA}")
-    file(APPEND ${CVP_MODEL_CPP} "};\n}\n\n")
-    file(APPEND ${CVP_MODEL_CPP} "const void* Cvp::model_${CVP_MODEL_CAPACITY} = (const void*)Cvp::binary_data_${CVP_MODEL_CAPACITY};\n")
-    file(APPEND ${CVP_MODEL_CPP} "const size_t Cvp::model_${CVP_MODEL_CAPACITY}_size = sizeof(Cvp::binary_data_${CVP_MODEL_CAPACITY});\n")
-    file(APPEND ${CVP_MODEL_CPP} "\n")
   endforeach()
-
-  file(GLOB CVP_MODEL_CPP_LIST ${CMAKE_CURRENT_BINARY_DIR}/source/*.cpp)
 endif()
 
 file(GLOB CVP_SOURCES
   ${CMAKE_CURRENT_SOURCE_DIR}/source/cvp.cpp
   ${CMAKE_CURRENT_SOURCE_DIR}/source/cvp.h
-  ${CVP_MODEL_H}
 )
 source_group("sources" FILES ${CVP_SOURCES})
 
 if(NOT CVP_MODELS_ONLY)
 ### Target ###
-add_library(cvp MODULE ${CVP_SOURCES} ${CVP_MODEL_CPP_LIST} ${CVP_MODEL_H})
+add_library(cvp MODULE ${CVP_SOURCES})
 ive_prepare_plugin_target(cvp)
 target_compile_definitions(cvp PRIVATE CVP_PLUGIN_VERSION=${PROJECT_VERSION_MAJOR})
 target_link_libraries(cvp PRIVATE tensorflow-lite)
@@ -194,6 +179,7 @@ if(APPLE)
   )
   add_custom_command(TARGET cvp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "BNDL????" > "$<TARGET_BUNDLE_CONTENT_DIR:cvp>/PkgInfo"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_BUNDLE_CONTENT_DIR:cvp>/Resources/models"
   )
 elseif(UNIX)
   set_target_properties(cvp PROPERTIES
@@ -212,6 +198,9 @@ elseif(UNIX)
     COMMAND ${CMAKE_COMMAND} -E copy
       "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
       "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${CVP_MODELS_DIR}"
+      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources/models"
   )
 elseif(WIN32)
   set_target_properties(cvp PROPERTIES
@@ -229,6 +218,9 @@ elseif(WIN32)
     COMMAND ${CMAKE_COMMAND} -E copy
       "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
       "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory
+      "${CVP_MODELS_DIR}"
+      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources/models"
   )
 endif()
 

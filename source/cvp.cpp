@@ -84,8 +84,16 @@ namespace Cvp
             HMODULE module = nullptr;
             if(GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT, reinterpret_cast<LPWSTR>(&getContentsDir), &module) != 0)
             {
-                std::array<wchar_t, MAX_PATH> filename = {};
-                if(GetModuleFileNameW(module, filename.data(), static_cast<DWORD>(filename.size())) != 0)
+                std::vector<wchar_t> filename(MAX_PATH);
+                auto capacity = static_cast<DWORD>(filename.size());
+                auto length = GetModuleFileNameW(module, filename.data(), capacity);
+                while(length == capacity)
+                {
+                    filename.resize(filename.size() * 2);
+                    capacity = static_cast<DWORD>(filename.size());
+                    length = GetModuleFileNameW(module, filename.data(), capacity);
+                }
+                if(length != 0)
                 {
                     return std::filesystem::path(filename.data()).parent_path().parent_path();
                 }

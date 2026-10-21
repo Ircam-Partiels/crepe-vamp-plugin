@@ -238,25 +238,19 @@ jobs:
         fail_on_unmatched_files: true
         files: ${{ github.workspace }}/Crepe-CommonPackage.zip
   # Generates the documentation.
+  # Configures the project in manual-only mode so that neither the models,
+  # TensorFlow nor the submodules are required to generate the documentation.
   Doc:
     runs-on: ubuntu-latest
-    needs: Cache
+    needs: Format
     steps:
     - uses: actions/checkout@v7
-      with:
-        submodules: recursive
     - uses: actions/setup-node@v7
       with:
         node-version: 20
     - run: npm install -g git+https://github.com/elliotblackburn/mdpdf.git#3.0.4
-    - name: Cache
-      uses: actions/cache@v6
-      with:
-        path: ./build/models
-        key: cvp-model
-        enableCrossOsArchive: true
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG=${{ env.tag_name }}
+      run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_MANUAL_ONLY=ON -DCVP_BUILD_TAG=${{ env.tag_name }}
     - name: Build
       run: |
         cmake --build build --target cvp_manual

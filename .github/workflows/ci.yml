@@ -63,18 +63,16 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
-    - name: CommonPackage
-      run: cd ${{ github.workspace }}/build/${{ env.build_type }} && zip -r ../../Crepe-CommonPackage-Linux.zip ircamcrepe.vamp
     - name: CommonPackage Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
         name: Crepe-CommonPackage-Linux
-        path: ${{ github.workspace }}/Crepe-CommonPackage-Linux.zip
+        path: ${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
         name: Crepe-Linux
-        path: ${{ github.workspace }}/package/Crepe-Linux.zip
+        path: ${{ github.workspace }}/build/Crepe
     - name: Release
       uses: softprops/action-gh-release@v3
       if: ${{ env.is_tagged == 'true' }}
@@ -113,13 +111,11 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
-    - name: CommonPackage
-      run: Compress-Archive -Path "${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp" -DestinationPath "${{ github.workspace }}/Crepe-CommonPackage-Windows.zip"
     - name: CommonPackage Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
         name: Crepe-CommonPackage-Windows
-        path: ${{ github.workspace }}/Crepe-CommonPackage-Windows.zip
+        path: ${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -175,13 +171,11 @@ jobs:
         cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
-    - name: CommonPackage
-      run: cd ${{ github.workspace }}/build/${{ env.build_type }} && zip -r -y ../Crepe-CommonPackage-MacOS.zip ircamcrepe.vamp
     - name: CommonPackage Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
         name: Crepe-CommonPackage-MacOS
-        path: ${{ github.workspace }}/build/Crepe-CommonPackage-MacOS.zip
+        path: ${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -206,29 +200,24 @@ jobs:
       uses: actions/download-artifact@v6
       with:
         name: Crepe-CommonPackage-Linux
-        path: ${{ github.workspace }}/commonpackage
+        path: ${{ github.workspace }}/dist/Linux/ircamcrepe.vamp
     - name: Download MacOS
       uses: actions/download-artifact@v6
       with:
         name: Crepe-CommonPackage-MacOS
-        path: ${{ github.workspace }}/commonpackage
+        path: ${{ github.workspace }}/dist/MacOS/ircamcrepe.vamp
     - name: Download Windows
       uses: actions/download-artifact@v6
       with:
         name: Crepe-CommonPackage-Windows
-        path: ${{ github.workspace }}/commonpackage
+        path: ${{ github.workspace }}/dist/Windows/ircamcrepe.vamp
     - name: Package
-      run: |
-        mkdir -p dist/Linux dist/MacOS dist/Windows
-        unzip commonpackage/Crepe-CommonPackage-Linux.zip -d dist/Linux
-        unzip commonpackage/Crepe-CommonPackage-MacOS.zip -d dist/MacOS
-        unzip commonpackage/Crepe-CommonPackage-Windows.zip -d dist/Windows
-        cd dist && zip -r ../Crepe-CommonPackage.zip Linux MacOS Windows
+      run: cd ${{ github.workspace }}/dist && zip -r ../Crepe-CommonPackage.zip Linux MacOS Windows
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
         name: Crepe-CommonPackage
-        path: ${{ github.workspace }}/Crepe-CommonPackage.zip
+        path: ${{ github.workspace }}/dist
     - name: Release
       uses: softprops/action-gh-release@v3
       if: ${{ env.is_tagged == 'true' }}

@@ -115,6 +115,16 @@ namespace Cvp
         }
         return models;
     }
+
+    static size_t getDefaultModelCapacity()
+    {
+        auto const models = getModelPaths();
+        auto const mediumIt = std::find_if(models.cbegin(), models.cend(), [](auto const& model)
+                                           {
+                                               return model.first == "medium";
+                                           });
+        return mediumIt != models.cend() ? static_cast<size_t>(std::distance(models.cbegin(), mediumIt)) : 0;
+    }
 } // namespace Cvp
 
 namespace ResamplerUtils
@@ -219,6 +229,7 @@ double Cvp::Plugin::Resampler::getRatio() const noexcept
 
 Cvp::Plugin::Plugin(float inputSampleRate)
 : Vamp::Plugin(inputSampleRate)
+, mModelCapacity(getDefaultModelCapacity())
 {
     mResampler.prepare(static_cast<double>(inputSampleRate));
 }
@@ -381,11 +392,7 @@ Cvp::Plugin::ParameterList Cvp::Plugin::getParameterDescriptors() const
         param.unit = "";
         param.minValue = 0;
         param.maxValue = static_cast<float>(models.size() - 1);
-        auto const mediumIt = std::find_if(models.cbegin(), models.cend(), [](auto const& model)
-                                           {
-                                               return model.first == "medium";
-                                           });
-        param.defaultValue = mediumIt != models.cend() ? static_cast<float>(std::distance(models.cbegin(), mediumIt)) : 0.0f;
+        param.defaultValue = static_cast<float>(getDefaultModelCapacity());
         param.isQuantized = true;
         param.quantizeStep = 1.0f;
         for(auto const& model : models)

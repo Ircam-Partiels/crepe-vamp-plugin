@@ -164,81 +164,28 @@ ive_prepare_plugin_target(cvp)
 target_compile_definitions(cvp PRIVATE CVP_PLUGIN_VERSION=${PROJECT_VERSION_MAJOR})
 target_link_libraries(cvp PRIVATE tensorflow-lite)
 
-set_target_properties(cvp PROPERTIES LIBRARY_OUTPUT_NAME ircamcrepe)
-
 if(APPLE)
-  set(RESOURCE_FILE "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat")
-  set_source_files_properties("${RESOURCE_FILE}" PROPERTIES MACOSX_PACKAGE_LOCATION "Resources")
-  target_sources(cvp PRIVATE "${RESOURCE_FILE}")
-
   find_library(COREFOUNDATION_LIBRARY CoreFoundation)
   target_link_libraries(cvp PRIVATE ${COREFOUNDATION_LIBRARY})
   set_target_properties(cvp PROPERTIES
-    BUNDLE TRUE
-    OUTPUT_NAME "ircamcrepe"
-    PREFIX ""
-    BUNDLE_EXTENSION "vamp"
-    MACOSX_BUNDLE_INFO_PLIST "${CMAKE_CURRENT_SOURCE_DIR}/resource/Info.plist"
     BUILD_WITH_INSTALL_RPATH FALSE
     LINK_FLAGS "-Wl,-rpath,@loader_path/../Frameworks"
   )
   add_custom_command(TARGET cvp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E echo "BNDL????" > "$<TARGET_BUNDLE_CONTENT_DIR:cvp>/PkgInfo"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_BUNDLE_CONTENT_DIR:cvp>/Resources/models"
-    # The binary of a macOS bundle has no extension, hence the symlink makes the plugin
-    # discoverable by the hosts and the vamp plugin tester that browse the Vamp path.
-    COMMAND ${CMAKE_COMMAND} -E create_symlink ircamcrepe "$<TARGET_FILE_DIR:cvp>/ircamcrepe.dylib"
   )
 elseif(UNIX)
-  set_target_properties(cvp PROPERTIES
-    BUNDLE TRUE
-    OUTPUT_NAME "ircamcrepe"
-    PREFIX ""
-    BUNDLE_EXTENSION "vamp"
-    BUILD_WITH_INSTALL_RPATH FALSE
-  )
-  # The dynamic library is generated directly in the bundle so that it is not
-  # created next to it (the output directory is created before linking).
-  set_target_properties(cvp PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ircamcrepe.vamp/Contents/x86_64-linux"
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/Debug/ircamcrepe.vamp/Contents/x86_64-linux"
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/Release/ircamcrepe.vamp/Contents/x86_64-linux"
-  )
+  set_target_properties(cvp PROPERTIES BUILD_WITH_INSTALL_RPATH FALSE)
   add_custom_command(TARGET cvp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/../Resources"
-    COMMAND ${CMAKE_COMMAND} -E copy
-      "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
-      "$<TARGET_FILE_DIR:cvp>/../Resources"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-      "${CVP_MODELS_DIR}"
-      "$<TARGET_FILE_DIR:cvp>/../Resources/models"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_FILE_DIR:cvp>/../Resources/models"
   )
 elseif(WIN32)
-  set_target_properties(cvp PROPERTIES
-    BUNDLE TRUE
-    OUTPUT_NAME "ircamcrepe"
-    PREFIX ""
-    BUNDLE_EXTENSION "vamp"
-  )
-  # The dynamic library is generated directly in the bundle so that it is not
-  # created next to it (the output directory is created before linking).
-  set_target_properties(cvp PROPERTIES
-    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ircamcrepe.vamp/Contents/x86_64-win"
-    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/Debug/ircamcrepe.vamp/Contents/x86_64-win"
-    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/Release/ircamcrepe.vamp/Contents/x86_64-win"
-  )
   add_custom_command(TARGET cvp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/../Resources"
-    COMMAND ${CMAKE_COMMAND} -E copy
-      "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
-      "$<TARGET_FILE_DIR:cvp>/../Resources"
-    COMMAND ${CMAKE_COMMAND} -E copy_directory
-      "${CVP_MODELS_DIR}"
-      "$<TARGET_FILE_DIR:cvp>/../Resources/models"
+    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_FILE_DIR:cvp>/../Resources/models"
   )
 endif()
 
-vpp_add_plugin(cvp ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat)
+vpp_add_plugin(cvp ircamcrepe ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat "Copyright 2026 Ircam. All rights reserved")
 vpp_set_plugin_debug(cvp "${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc")
 vpp_set_plugin_install(cvp)
 if(NOT IGNORE_VAMP_PLUGIN_TESTER)

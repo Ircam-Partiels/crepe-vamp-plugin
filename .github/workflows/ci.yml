@@ -67,7 +67,7 @@ jobs:
       uses: actions/upload-artifact@v7.0.2
       with:
         name: Crepe-CommonPackage-Linux
-        path: ${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp
+        path: ${{ github.workspace }}/build/ircamcrepe.vamp
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -115,7 +115,7 @@ jobs:
       uses: actions/upload-artifact@v7.0.2
       with:
         name: Crepe-CommonPackage-Windows
-        path: ${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp
+        path: ${{ github.workspace }}/build/ircamcrepe.vamp
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:

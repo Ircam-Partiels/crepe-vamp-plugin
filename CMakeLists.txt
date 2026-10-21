@@ -184,6 +184,9 @@ if(APPLE)
   add_custom_command(TARGET cvp POST_BUILD
     COMMAND ${CMAKE_COMMAND} -E echo "BNDL????" > "$<TARGET_BUNDLE_CONTENT_DIR:cvp>/PkgInfo"
     COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_BUNDLE_CONTENT_DIR:cvp>/Resources/models"
+    # The binary of a macOS bundle has no extension, hence the symlink makes the plugin
+    # discoverable by the hosts and the vamp plugin tester that browse the Vamp path.
+    COMMAND ${CMAKE_COMMAND} -E create_symlink ircamcrepe "$<TARGET_FILE_DIR:cvp>/ircamcrepe.dylib"
   )
 elseif(UNIX)
   set_target_properties(cvp PROPERTIES
@@ -193,18 +196,21 @@ elseif(UNIX)
     BUNDLE_EXTENSION "vamp"
     BUILD_WITH_INSTALL_RPATH FALSE
   )
+  # The dynamic library is generated directly in the bundle so that it is not
+  # created next to it (the output directory is created before linking).
+  set_target_properties(cvp PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ircamcrepe.vamp/Contents/x86_64-linux"
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/Debug/ircamcrepe.vamp/Contents/x86_64-linux"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/Release/ircamcrepe.vamp/Contents/x86_64-linux"
+  )
   add_custom_command(TARGET cvp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-linux"
-    COMMAND ${CMAKE_COMMAND} -E copy
-      "$<TARGET_FILE:cvp>"
-      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-linux"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/../Resources"
     COMMAND ${CMAKE_COMMAND} -E copy
       "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
-      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+      "$<TARGET_FILE_DIR:cvp>/../Resources"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
       "${CVP_MODELS_DIR}"
-      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources/models"
+      "$<TARGET_FILE_DIR:cvp>/../Resources/models"
   )
 elseif(WIN32)
   set_target_properties(cvp PROPERTIES
@@ -213,24 +219,34 @@ elseif(WIN32)
     PREFIX ""
     BUNDLE_EXTENSION "vamp"
   )
+  # The dynamic library is generated directly in the bundle so that it is not
+  # created next to it (the output directory is created before linking).
+  set_target_properties(cvp PROPERTIES
+    LIBRARY_OUTPUT_DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/ircamcrepe.vamp/Contents/x86_64-win"
+    LIBRARY_OUTPUT_DIRECTORY_DEBUG "${CMAKE_CURRENT_BINARY_DIR}/Debug/ircamcrepe.vamp/Contents/x86_64-win"
+    LIBRARY_OUTPUT_DIRECTORY_RELEASE "${CMAKE_CURRENT_BINARY_DIR}/Release/ircamcrepe.vamp/Contents/x86_64-win"
+  )
   add_custom_command(TARGET cvp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-win"
-    COMMAND ${CMAKE_COMMAND} -E copy
-      "$<TARGET_FILE:cvp>"
-      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-win"
-    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+    COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/../Resources"
     COMMAND ${CMAKE_COMMAND} -E copy
       "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
-      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
+      "$<TARGET_FILE_DIR:cvp>/../Resources"
     COMMAND ${CMAKE_COMMAND} -E copy_directory
       "${CVP_MODELS_DIR}"
-      "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources/models"
+      "$<TARGET_FILE_DIR:cvp>/../Resources/models"
   )
 endif()
 
 vpp_add_plugin(cvp ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat)
 vpp_set_plugin_debug(cvp "${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc")
 vpp_set_plugin_install(cvp)
+if(NOT IGNORE_VAMP_PLUGIN_TESTER)
+  enable_testing()
+  # The test C1 (Normal input) is sufficient to check that the plugin loads (no
+  # dependency issues), that the tflite models of the bundle are loaded and that
+  # the inference runs, without testing all the configurations that take long.
+  vpp_enable_vamp_plugin_tester(cvp -a -t C1)
+endif()
 vpp_create_clang_format_targets(cvp ${CVP_SOURCES})
 endif()
 

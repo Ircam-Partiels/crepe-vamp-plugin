@@ -1,6 +1,7 @@
 cmake_minimum_required(VERSION 3.18)
 
 set(IGNORE_VAMP_PLUGIN_TESTER OFF CACHE STRING "Disables the tests with vamp plugin tester")
+set(CVP_TESTER_TIMEOUT 600 CACHE STRING "The timeout in seconds of the test with the vamp plugin tester (zero for no timeout)")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -245,7 +246,7 @@ if(NOT IGNORE_VAMP_PLUGIN_TESTER)
   # The test C1 (Normal input) is sufficient to check that the plugin loads (no
   # dependency issues), that the tflite models of the bundle are loaded and that
   # the inference runs, without testing all the configurations that take long.
-  vpp_enable_vamp_plugin_tester(cvp -a -t C1)
+  vpp_enable_vamp_plugin_tester(cvp -a -t C1 TIMEOUT ${CVP_TESTER_TIMEOUT})
 endif()
 vpp_create_clang_format_targets(cvp ${CVP_SOURCES})
 endif()

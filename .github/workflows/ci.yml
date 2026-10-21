@@ -42,7 +42,7 @@ jobs:
       run: cmake -B ${{ github.workspace }}/build -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_MODELS_ONLY=ON
   # Compiles, tests and packages the plugin for Ubuntu.
   Ubuntu:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     needs: Cache
     steps:
     - uses: actions/checkout@v7

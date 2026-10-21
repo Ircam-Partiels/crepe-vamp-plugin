@@ -275,7 +275,7 @@ std::string Cvp::Plugin::getMaker() const
 
 int Cvp::Plugin::getPluginVersion() const
 {
-    return CVP_PLUGIN_VERSION;
+    return PLUGIN_VERSION;
 }
 
 std::string Cvp::Plugin::getCopyright() const

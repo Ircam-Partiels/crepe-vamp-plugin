@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
-set(IGNORE_VAMP_PLUGIN_TESTER OFF CACHE STRING "Disables the tests with vamp plugin tester")
+set(CVP_TESTER_ENABLE ON CACHE STRING "Enables the tests with the vamp plugin tester")
 set(CVP_TESTER_TIMEOUT 600 CACHE STRING "The timeout in seconds of the test with the vamp plugin tester (zero for no timeout)")
 
 set(CMAKE_CXX_STANDARD 20)
@@ -161,40 +161,32 @@ if(NOT CVP_MODELS_ONLY AND NOT CVP_MANUAL_ONLY)
 ### Target ###
 add_library(cvp MODULE ${CVP_SOURCES})
 ive_prepare_plugin_target(cvp)
-target_compile_definitions(cvp PRIVATE CVP_PLUGIN_VERSION=${PROJECT_VERSION_MAJOR})
 target_link_libraries(cvp PRIVATE tensorflow-lite)
 
-if(APPLE)
-  find_library(COREFOUNDATION_LIBRARY CoreFoundation)
-  target_link_libraries(cvp PRIVATE ${COREFOUNDATION_LIBRARY})
-  set_target_properties(cvp PROPERTIES
-    BUILD_WITH_INSTALL_RPATH FALSE
-    LINK_FLAGS "-Wl,-rpath,@loader_path/../Frameworks"
-  )
-  add_custom_command(TARGET cvp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_BUNDLE_CONTENT_DIR:cvp>/Resources/models"
-  )
-elseif(UNIX)
-  set_target_properties(cvp PROPERTIES BUILD_WITH_INSTALL_RPATH FALSE)
-  add_custom_command(TARGET cvp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_FILE_DIR:cvp>/../Resources/models"
-  )
-elseif(WIN32)
-  add_custom_command(TARGET cvp POST_BUILD
-    COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_FILE_DIR:cvp>/../Resources/models"
-  )
+if(CVP_TESTER_ENABLE)
+  enable_testing()
 endif()
 
-vpp_add_plugin(cvp ircamcrepe ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat "Copyright 2026 Ircam. All rights reserved")
-vpp_set_plugin_debug(cvp "${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc")
-vpp_set_plugin_install(cvp)
-if(NOT IGNORE_VAMP_PLUGIN_TESTER)
-  enable_testing()
+vpp_add_plugin(cvp
+  OUTPUT_NAME ircamcrepe
+  CATFILE ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat
+  COPYRIGHT "Copyright 2026 Ircam. All rights reserved"
+  VERSION ${PROJECT_VERSION_MAJOR}
+  INSTALL ON
+  DEBUG ON
+  DEBUG_DOCUMENT ${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc
   # The test C1 (Normal input) is sufficient to check that the plugin loads (no
   # dependency issues), that the tflite models of the bundle are loaded and that
   # the inference runs, without testing all the configurations that take long.
-  vpp_enable_vamp_plugin_tester(cvp -a -t C1 TIMEOUT ${CVP_TESTER_TIMEOUT})
-endif()
+  TESTER ${CVP_TESTER_ENABLE}
+  TESTER_ARGUMENTS -a -t C1
+  TESTER_TIMEOUT ${CVP_TESTER_TIMEOUT}
+)
+
+add_custom_command(TARGET cvp POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_FILE_DIR:cvp>/../Resources/models"
+)
+
 vpp_create_clang_format_targets(cvp ${CVP_SOURCES})
 endif()
 

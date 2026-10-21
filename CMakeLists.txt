@@ -1,7 +1,6 @@
 cmake_minimum_required(VERSION 3.18)
 
 set(IGNORE_VAMP_PLUGIN_TESTER OFF CACHE STRING "Disables the tests with vamp plugin tester")
-set(PARTIELS_EXE_HINT_PATH "/Applications" CACHE PATH "")
 
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)

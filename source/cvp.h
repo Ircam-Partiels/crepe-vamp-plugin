@@ -1,6 +1,5 @@
 #pragma once
 
-#include "cvp_model.h"
 #include <IvePluginAdapter.hpp>
 #include <array>
 #include <memory>
@@ -45,6 +44,11 @@ namespace Cvp
         OutputExtraList getOutputExtraDescriptors(size_t outputDescriptorIndex) const override;
 
     private:
+        static auto constexpr modelSampleRate = 16000;
+        static auto constexpr modelBlockSize = 1024;
+        static auto constexpr modelHopeSize = 160;
+        static auto constexpr modelActivationSize = 360;
+
         FeatureList processModel();
 
         class Resampler

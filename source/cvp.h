@@ -84,6 +84,6 @@ namespace Cvp
         size_t mInputBufferPosition{0};
         size_t mBlockSize{0};
         size_t mActivationFrame{0};
-        size_t mModelCapacity{2};
+        size_t mModelCapacity;
     };
 } // namespace Cvp

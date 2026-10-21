@@ -198,8 +198,6 @@ elseif(UNIX)
     COMMAND ${CMAKE_COMMAND} -E copy
       "$<TARGET_FILE:cvp>"
       "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-linux"
-    COMMAND ${CMAKE_COMMAND} -E rm -f
-      "$<TARGET_FILE:cvp>"
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
     COMMAND ${CMAKE_COMMAND} -E copy
       "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"
@@ -220,8 +218,6 @@ elseif(WIN32)
     COMMAND ${CMAKE_COMMAND} -E copy
       "$<TARGET_FILE:cvp>"
       "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/x86_64-win"
-    COMMAND ${CMAKE_COMMAND} -E rm -f
-      "$<TARGET_FILE:cvp>"
     COMMAND ${CMAKE_COMMAND} -E make_directory "$<TARGET_FILE_DIR:cvp>/ircamcrepe.vamp/Contents/Resources"
     COMMAND ${CMAKE_COMMAND} -E copy
       "${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat"

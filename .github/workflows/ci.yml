@@ -58,7 +58,7 @@ jobs:
     - name: Sccache
       uses: mozilla-actions/sccache-action@v0.0.11
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCMAKE_C_COMPILER="/usr/bin/clang" -DCMAKE_CXX_COMPILER="/usr/bin/clang++" -DCVP_BUILD_TAG=${{ env.tag_name }} -DCVP_USE_SCCACHE=ON -Wno-dev
+      run: cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCMAKE_C_COMPILER="/usr/bin/clang" -DCMAKE_CXX_COMPILER="/usr/bin/clang++" -DCVP_BUILD_TAG=${{ env.tag_name }} -DCVP_ENABLE_DEBUG=OFF -DCVP_USE_SCCACHE=ON -Wno-dev
     - name: Build
       run: cmake --build ${{ github.workspace }}/build
     - name: Test
@@ -106,7 +106,7 @@ jobs:
     - name: Sccache
       uses: mozilla-actions/sccache-action@v0.0.11
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG="${{ env.tag_name }}" -DCVP_USE_SCCACHE=ON -Wno-dev
+      run: cmake -B ${{ github.workspace }}/build -G Ninja -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG="${{ env.tag_name }}" -DCVP_ENABLE_DEBUG=OFF -DCVP_USE_SCCACHE=ON -Wno-dev
     - name: Build
       run: cmake --build ${{ github.workspace }}/build
     - name: Test
@@ -163,7 +163,7 @@ jobs:
     - name: Sccache
       uses: mozilla-actions/sccache-action@v0.0.11
     - name: Configure
-      run: cmake -B ${{ github.workspace }}/build -G Ninja -DVPP_CODESIGN_APPLE_KEYCHAIN_PROFILE_INSTALLER="notary-installer" -DVPP_NOTARIZE=ON -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG=${{ env.tag_name }} -DCVP_USE_SCCACHE=ON -Wno-dev
+      run: cmake -B ${{ github.workspace }}/build -G Ninja -DVPP_CODESIGN_APPLE_KEYCHAIN_PROFILE_INSTALLER="notary-installer" -DVPP_NOTARIZE=ON -DCMAKE_BUILD_TYPE=${{ env.build_type }} -DCVP_BUILD_TAG=${{ env.tag_name }} -DCVP_ENABLE_DEBUG=OFF -DCVP_USE_SCCACHE=ON -Wno-dev
     - name: Build
       run: |
         security unlock-keychain -p ${{ secrets.DEV_ID_PASSWORD }} buildagent

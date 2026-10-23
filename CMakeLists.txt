@@ -3,6 +3,8 @@ cmake_minimum_required(VERSION 3.18)
 set(CVP_TESTER_ENABLE ON CACHE STRING "Enables the tests with the vamp plugin tester")
 set(CVP_TESTER_TIMEOUT 600 CACHE STRING "The timeout in seconds of the test with the vamp plugin tester (zero for no timeout)")
 
+option(CVP_ENABLE_DEBUG "Enables the debug scheme using the Partiels application" ON)
+
 set(CMAKE_CXX_STANDARD 20)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 set(CMAKE_XCODE_GENERATE_SCHEME ON)
@@ -173,7 +175,7 @@ vpp_add_plugin(cvp
   COPYRIGHT "Copyright 2026 Ircam. All rights reserved"
   VERSION ${PROJECT_VERSION_MAJOR}
   INSTALL ON
-  DEBUG ON
+  DEBUG ${CVP_ENABLE_DEBUG}
   DEBUG_DOCUMENT ${CMAKE_CURRENT_SOURCE_DIR}/test/crepe.ptldoc
   # The test C1 (Normal input) is sufficient to check that the plugin loads (no
   # dependency issues), that the tflite models of the bundle are loaded and that

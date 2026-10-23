@@ -63,11 +63,13 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
-    - name: CommonPackage Artifact
+    - name: Package
+      run: cmake -E chdir ${{ github.workspace }}/build/${{ env.build_type }} cmake -E tar cf ${{ github.workspace }}/Crepe-Vamp-Linux.zip --format=zip ircamcrepe.vamp
+    - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
-        name: Crepe-CommonPackage-Linux
-        path: ${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp
+        name: Crepe-Vamp-Linux
+        path: ${{ github.workspace }}/Crepe-Vamp-Linux.zip
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -82,7 +84,9 @@ jobs:
         fail_on_unmatched_files: true
         generate_release_notes: true
         body_path: ${{ github.workspace }}/build/crepe-release.md
-        files: ${{ github.workspace }}/package/Crepe-Linux.zip
+        files: |
+          ${{ github.workspace }}/package/Crepe-Linux.zip
+          ${{ github.workspace }}/Crepe-Vamp-Linux.zip
   # Compiles, tests and packages the plugin for Windows.
   Windows:
     runs-on: windows-latest
@@ -111,11 +115,13 @@ jobs:
       run: cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
-    - name: CommonPackage Artifact
+    - name: Package
+      run: cmake -E chdir ${{ github.workspace }}/build/${{ env.build_type }} cmake -E tar cf ${{ github.workspace }}/Crepe-Vamp-Windows.zip --format=zip ircamcrepe.vamp
+    - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
-        name: Crepe-CommonPackage-Windows
-        path: ${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp
+        name: Crepe-Vamp-Windows
+        path: ${{ github.workspace }}/Crepe-Vamp-Windows.zip
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -130,7 +136,9 @@ jobs:
         fail_on_unmatched_files: true
         generate_release_notes: true
         body_path: ${{ github.workspace }}/build/crepe-release.md
-        files: ${{ github.workspace }}/package/Crepe-Windows.exe
+        files: |
+          ${{ github.workspace }}/package/Crepe-Windows.exe
+          ${{ github.workspace }}/Crepe-Vamp-Windows.zip
   # Compiles, tests and packages the plugin for MacOS.
   MacOS:
     runs-on: macos-latest
@@ -171,11 +179,13 @@ jobs:
         cmake --build ${{ github.workspace }}/build
     - name: Test
       run: ctest -C ${{ env.build_type }} -VV --test-dir ${{ github.workspace }}/build
-    - name: CommonPackage Artifact
+    - name: Package
+      run: cmake -E chdir ${{ github.workspace }}/build/${{ env.build_type }} cmake -E tar cf ${{ github.workspace }}/Crepe-Vamp-MacOS.zip --format=zip ircamcrepe.vamp
+    - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
-        name: Crepe-CommonPackage-MacOS
-        path: ${{ github.workspace }}/build/${{ env.build_type }}/ircamcrepe.vamp
+        name: Crepe-Vamp-MacOS
+        path: ${{ github.workspace }}/Crepe-Vamp-MacOS.zip
     - name: Artifact
       uses: actions/upload-artifact@v7.0.2
       with:
@@ -190,42 +200,9 @@ jobs:
         fail_on_unmatched_files: true
         generate_release_notes: true
         body_path: ${{ github.workspace }}/build/crepe-release.md
-        files: ${{ github.workspace }}/package/Crepe-MacOS.pkg
-  # Packages the vamp plugins of the three operating systems for a common distribution package.
-  CommonPackage:
-    runs-on: ubuntu-latest
-    needs: [Ubuntu, Windows, MacOS]
-    steps:
-    - name: Download Linux
-      uses: actions/download-artifact@v6
-      with:
-        name: Crepe-CommonPackage-Linux
-        path: ${{ github.workspace }}/dist/Linux/ircamcrepe.vamp
-    - name: Download MacOS
-      uses: actions/download-artifact@v6
-      with:
-        name: Crepe-CommonPackage-MacOS
-        path: ${{ github.workspace }}/dist/MacOS/ircamcrepe.vamp
-    - name: Download Windows
-      uses: actions/download-artifact@v6
-      with:
-        name: Crepe-CommonPackage-Windows
-        path: ${{ github.workspace }}/dist/Windows/ircamcrepe.vamp
-    - name: Package
-      run: cd ${{ github.workspace }}/dist && zip -r ../Crepe-CommonPackage.zip Linux MacOS Windows
-    - name: Artifact
-      uses: actions/upload-artifact@v7.0.2
-      with:
-        name: Crepe-CommonPackage
-        path: ${{ github.workspace }}/dist
-    - name: Release
-      uses: softprops/action-gh-release@v3
-      if: ${{ env.is_tagged == 'true' }}
-      with:
-        draft: true
-        prerelease: true
-        fail_on_unmatched_files: true
-        files: ${{ github.workspace }}/Crepe-CommonPackage.zip
+        files: |
+          ${{ github.workspace }}/package/Crepe-MacOS.pkg
+          ${{ github.workspace }}/Crepe-Vamp-MacOS.zip
   # Generates the documentation.
   # Configures the project in manual-only mode so that neither the models,
   # TensorFlow nor the submodules are required to generate the documentation.

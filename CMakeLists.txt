@@ -13,7 +13,7 @@ set(CMAKE_MSVC_RUNTIME_LIBRARY "MultiThreaded$<$<CONFIG:Debug>:Debug>" CACHE STR
 set(CMAKE_POSITION_INDEPENDENT_CODE TRUE CACHE BOOL "Default value for POSITION_INDEPENDENT_CODE of targets" FORCE)
 
 ### Project ###
-project(CrepeVampPlugin VERSION 4.0.0 LANGUAGES C CXX)
+project(CrepeVampPlugin VERSION 4.1.0 LANGUAGES C CXX)
 
 ### Models only ###
 set(CVP_MODELS_ONLY OFF CACHE BOOL "Only downloads the tflite models (used by the CI cache, without TensorFlow and the other dependencies)")

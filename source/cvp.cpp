@@ -135,6 +135,22 @@ namespace Cvp
     }
 } // namespace Cvp
 
+// The resampler (ResamplerUtils and Resampler) is adapted from the Lagrange
+// interpolator (juce_LagrangeInterpolator.cpp and juce_GenericInterpolator.h)
+// of the juce_audio_basics module of JUCE 7
+// (https://github.com/juce-framework/JUCE), distributed under the ISC license:
+//
+// Copyright (c) 2022 - Raw Material Software Limited
+//
+// The code included in this file is provided under the terms of the ISC license
+// http://www.isc.org/downloads/software-support-policy/isc-license. Permission
+// To use, copy, modify, and/or distribute this software for any purpose with or
+// without fee is hereby granted provided that the above copyright notice and
+// this permission notice appear in all copies.
+//
+// JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
+// EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
+// DISCLAIMED.
 namespace ResamplerUtils
 {
     template <int k>
@@ -280,7 +296,7 @@ int Cvp::Plugin::getPluginVersion() const
 
 std::string Cvp::Plugin::getCopyright() const
 {
-    return "Crepe model by Jong Wook Kim, Justin Salamon, Peter Li & Juan Pablo Bello. Crepe Vamp Plugin by Pierre Guillot. Copyright 2024 Ircam. All rights reserved.";
+    return "Crepe model by Jong Wook Kim, Justin Salamon, Peter Li & Juan Pablo Bello. Crepe Vamp Plugin by Pierre Guillot. Copyright 2024 Ircam. MIT License.";
 }
 
 Cvp::Plugin::InputDomain Cvp::Plugin::getInputDomain() const

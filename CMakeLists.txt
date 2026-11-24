@@ -172,7 +172,7 @@ endif()
 vpp_add_plugin(cvp
   OUTPUT_NAME ircamcrepe
   CATFILE ${CMAKE_CURRENT_SOURCE_DIR}/resource/ircamcrepe.cat
-  COPYRIGHT "Copyright 2026 Ircam. All rights reserved"
+  COPYRIGHT "Copyright 2026 Ircam. MIT License"
   VERSION ${PROJECT_VERSION_MAJOR}
   INSTALL ON
   DEBUG ${CVP_ENABLE_DEBUG}
@@ -188,6 +188,49 @@ vpp_add_plugin(cvp
 add_custom_command(TARGET cvp POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_directory "${CVP_MODELS_DIR}" "$<TARGET_FILE_DIR:cvp>/../Resources/models"
 )
+
+# The licenses of the plugin, of the third-party libraries and of the models are
+# copied into the Resources/licenses folder of the Vamp bundle (hence they are
+# distributed with the bundle and the installers). The ThirdPartyNotices.txt file
+# lists the components and refers to the license files. The dependencies of
+# TensorFlow Lite are downloaded at configure time, so their source directories
+# are given by the variables of the TensorFlow Lite and XNNPACK CMake files.
+set(CVP_LICENSES_DIR "$<TARGET_FILE_DIR:cvp>/../Resources/licenses")
+add_custom_command(TARGET cvp POST_BUILD
+  COMMAND ${CMAKE_COMMAND} -E make_directory "${CVP_LICENSES_DIR}"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/resource/ThirdPartyNotices.txt" "${CVP_LICENSES_DIR}/ThirdPartyNotices.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/Crepe-Vamp-Plugin.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/resource/crepe-LICENSE.txt" "${CVP_LICENSES_DIR}/crepe.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${TENSORFLOW_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/tensorflow.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${absl_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/abseil-cpp.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${FlatBuffers_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/flatbuffers.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${GEMMLOWP_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/gemmlowp.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${RUY_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/ruy.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${ML_DTYPES_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/ml_dtypes.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${Eigen3_SOURCE_DIR}/COPYING.MPL2" "${CVP_LICENSES_DIR}/eigen.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${FARMHASH_SOURCE_DIR}/COPYING" "${CVP_LICENSES_DIR}/farmhash.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${FFT2D_SOURCE_DIR}/readme.txt" "${CVP_LICENSES_DIR}/fft2d.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${FFT2D_SOURCE_DIR}/readme2d.txt" "${CVP_LICENSES_DIR}/fft2d-2d.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${XNNPACK_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/xnnpack.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CPUINFO_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/cpuinfo.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${PTHREADPOOL_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/pthreadpool.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${FP16_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/FP16.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${FXDIV_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/FXdiv.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${VAMP_SDK_PATH}/COPYING" "${CVP_LICENSES_DIR}/vamp-plugin-sdk.txt"
+  COMMAND ${CMAKE_COMMAND} -E copy "${CMAKE_CURRENT_SOURCE_DIR}/ircam-vamp-extension/LICENSE" "${CVP_LICENSES_DIR}/ircam-vamp-extension.txt"
+)
+# KleidiAI is only used by XNNPACK on Arm 64-bit platforms.
+if(TARGET kleidiai)
+  add_custom_command(TARGET cvp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${KLEIDIAI_SOURCE_DIR}/LICENSES/Apache-2.0.txt" "${CVP_LICENSES_DIR}/kleidiai.txt"
+  )
+endif()
+# NEON_2_SSE is only used by TensorFlow Lite on x86 platforms.
+if(TARGET NEON_2_SSE)
+  add_custom_command(TARGET cvp POST_BUILD
+    COMMAND ${CMAKE_COMMAND} -E copy "${NEON_2_SSE_SOURCE_DIR}/LICENSE" "${CVP_LICENSES_DIR}/neon2sse.txt"
+  )
+endif()
 
 vpp_create_clang_format_targets(cvp ${CVP_SOURCES})
 endif()

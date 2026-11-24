@@ -1,0 +1,142 @@
+Crepe Vamp Plugin - Third-party notices
+=======================================
+
+The Crepe Vamp Plugin is distributed under the MIT License (see
+Crepe-Vamp-Plugin.txt). It includes the following third-party software and
+models, which remain under their own licenses. The full texts of the licenses
+are in this folder.
+
+Software
+--------
+
+- TensorFlow Lite (https://github.com/tensorflow/tensorflow)
+  Copyright The TensorFlow Authors
+  License: Apache License 2.0 (tensorflow.txt)
+  TensorFlow contains code derived from Caffe, Copyright (c) 2014 The Regents
+  of the University of California (Regents) and the respective contributors,
+  BSD 2-Clause license (tensorflow.txt)
+
+- Abseil (https://github.com/abseil/abseil-cpp), used by TensorFlow Lite
+  Copyright The Abseil Authors
+  License: Apache License 2.0 (abseil-cpp.txt)
+
+- FlatBuffers (https://github.com/google/flatbuffers), used by TensorFlow Lite
+  Copyright Google Inc.
+  License: Apache License 2.0 (flatbuffers.txt)
+
+- gemmlowp (https://github.com/google/gemmlowp), used by TensorFlow Lite
+  Copyright The Gemmlowp Authors
+  License: Apache License 2.0 (gemmlowp.txt)
+
+- ruy (https://github.com/google/ruy), used by TensorFlow Lite
+  Copyright Google LLC
+  License: Apache License 2.0 (ruy.txt)
+
+- ml_dtypes (https://github.com/jax-ml/ml_dtypes), used by TensorFlow Lite
+  Copyright The ml_dtypes Authors
+  License: Apache License 2.0 (ml_dtypes.txt)
+
+- Eigen (https://gitlab.com/libeigen/eigen), used by TensorFlow Lite
+  Copyright (C) Gael Guennebaud, Benoit Jacob and the other Eigen contributors
+  License: Mozilla Public License 2.0 (eigen.txt)
+  Eigen is compiled with EIGEN_MPL2_ONLY. The source code of Eigen is
+  available at https://gitlab.com/libeigen/eigen.
+
+- FarmHash (https://github.com/google/farmhash), used by TensorFlow Lite
+  Copyright (c) 2014 Google, Inc.
+  License: MIT License (farmhash.txt)
+
+- fft2d (General Purpose FFT Package, https://www.kurims.kyoto-u.ac.jp/~ooura/fft.html),
+  used by TensorFlow Lite
+  Copyright (C) 1996-2001 Takuya Ooura
+  License: free use, copy and modification for any purpose and without fee
+  (fft2d.txt and fft2d-2d.txt)
+
+- XNNPACK (https://github.com/google/XNNPACK), used by TensorFlow Lite
+  Copyright (c) Facebook, Inc. and its affiliates
+  Copyright 2019 Google LLC
+  License: BSD 3-Clause license (xnnpack.txt)
+
+- cpuinfo (https://github.com/pytorch/cpuinfo), used by TensorFlow Lite and XNNPACK
+  Copyright (c) 2019 Google LLC
+  Copyright (c) 2017-2018 Facebook Inc.
+  Copyright (C) 2012-2017 Georgia Institute of Technology
+  Copyright (C) 2010-2012 Marat Dukhan
+  License: BSD 2-Clause license (cpuinfo.txt)
+
+- pthreadpool (https://github.com/google/pthreadpool), used by TensorFlow Lite
+  and XNNPACK
+  Copyright 2019 Google LLC
+  Copyright (c) 2017 Facebook Inc.
+  Copyright (c) 2015-2017 Georgia Institute of Technology
+  License: BSD 2-Clause license (pthreadpool.txt)
+
+- FP16 (https://github.com/Maratyszcza/FP16), used by TensorFlow Lite and XNNPACK
+  Copyright (c) 2017 Facebook Inc.
+  Copyright (c) 2017 Georgia Institute of Technology
+  Copyright 2019 Google LLC
+  License: MIT License (FP16.txt)
+
+- FXdiv (https://github.com/Maratyszcza/FXdiv), used by pthreadpool
+  Copyright (c) 2017 Facebook Inc.
+  Copyright (c) 2016-2017 Marat Dukhan
+  License: MIT License (FXdiv.txt)
+
+- KleidiAI (https://github.com/ARM-software/kleidiai), used by XNNPACK on
+  Arm 64-bit platforms only
+  Copyright 2024-2025 Arm Limited and/or its affiliates
+  License: Apache License 2.0 (kleidiai.txt)
+
+- NEON_2_SSE (https://github.com/intel/ARM_NEON_2_x86_SSE), used by
+  TensorFlow Lite on x86 platforms only
+  Copyright (C) 2012-2020 Intel Corporation
+  License: BSD-style license (neon2sse.txt)
+
+- Vamp Plugin SDK (https://github.com/vamp-plugins/vamp-plugin-sdk)
+  Copyright (c) 2005-2006 Chris Cannam
+  Copyright (c) 2006-2024 Queen Mary, University of London
+  License: MIT-style license (vamp-plugin-sdk.txt)
+  The Vamp Plugin SDK contains KissFFT, Copyright (c) 2003-2010 Mark Borgerding,
+  BSD 3-Clause license (vamp-plugin-sdk.txt)
+
+- Ircam Vamp Extension (https://github.com/Ircam-Partiels/ircam-vamp-extension)
+  Copyright (c) 2024 Pierre Guillot, IRCAM
+  License: MIT License (ircam-vamp-extension.txt)
+
+- JUCE (https://github.com/juce-framework/JUCE)
+  The resampler of the plugin is adapted from the Lagrange interpolator
+  (juce_LagrangeInterpolator.cpp and juce_GenericInterpolator.h) of the
+  juce_audio_basics module of JUCE 7, distributed under the ISC license:
+
+    Copyright (c) 2022 - Raw Material Software Limited
+
+    The code included in this file is provided under the terms of the ISC license
+    http://www.isc.org/downloads/software-support-policy/isc-license. Permission
+    To use, copy, modify, and/or distribute this software for any purpose with or
+    without fee is hereby granted provided that the above copyright notice and
+    this permission notice appear in all copies.
+
+    JUCE IS PROVIDED "AS IS" WITHOUT ANY WARRANTY, AND ALL WARRANTIES, WHETHER
+    EXPRESSED OR IMPLIED, INCLUDING MERCHANTABILITY AND FITNESS FOR PURPOSE, ARE
+    DISCLAIMED.
+
+Only the files of the components used by the platform of the plugin are
+present in this folder (KleidiAI on Arm 64-bit platforms, NEON_2_SSE on x86
+platforms).
+
+Models
+------
+
+The models embedded in the Resources/models folder of the plugin bundle are
+the pre-trained models of CREPE (https://github.com/marl/crepe) by Jong Wook
+Kim, Justin Salamon, Peter Li and Juan Pablo Bello, converted to the
+TensorFlow Lite format (see resource/create-tflite-models.py in the source
+repository of the plugin). They are distributed under the MIT License,
+Copyright (c) 2018 Jong Wook Kim (crepe.txt).
+
+- crepe-tiny, crepe-small, crepe-medium, crepe-large and crepe-full
+  https://github.com/marl/crepe
+
+J. W. Kim, J. Salamon, P. Li, J. P. Bello. "CREPE: A Convolutional
+Representation for Pitch Estimation", Proceedings of the IEEE International
+Conference on Acoustics, Speech, and Signal Processing (ICASSP), 2018.
